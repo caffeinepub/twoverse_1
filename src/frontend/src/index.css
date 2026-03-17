@@ -1,0 +1,225 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Figtree:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Rose Petal (default) ---- */
+:root,
+[data-theme="rose-petal"] {
+  --background: 0.98 0.008 350;
+  --foreground: 0.22 0.04 340;
+  --card: 0.995 0.003 350;
+  --card-foreground: 0.22 0.04 340;
+  --popover: 0.995 0.003 350;
+  --popover-foreground: 0.22 0.04 340;
+  --primary: 0.62 0.22 350;
+  --primary-foreground: 0.98 0.003 350;
+  --secondary: 0.93 0.05 350;
+  --secondary-foreground: 0.42 0.1 340;
+  --muted: 0.95 0.025 350;
+  --muted-foreground: 0.55 0.07 340;
+  --accent: 0.9 0.08 10;
+  --accent-foreground: 0.3 0.1 10;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.9 0.045 350;
+  --input: 0.9 0.045 350;
+  --ring: 0.62 0.22 350;
+  --radius: 1.25rem;
+  --chart-1: 0.62 0.22 350;
+  --chart-2: 0.68 0.16 40;
+  --chart-3: 0.6 0.18 280;
+  --chart-4: 0.65 0.18 155;
+  --chart-5: 0.72 0.16 60;
+  --sidebar: 0.96 0.015 350;
+  --sidebar-foreground: 0.22 0.04 340;
+  --sidebar-primary: 0.62 0.22 350;
+  --sidebar-primary-foreground: 0.98 0.003 350;
+  --sidebar-accent: 0.9 0.08 10;
+  --sidebar-accent-foreground: 0.3 0.1 10;
+  --sidebar-border: 0.9 0.045 350;
+  --sidebar-ring: 0.62 0.22 350;
+}
+
+/* ---- Midnight Blue ---- */
+[data-theme="midnight-blue"] {
+  --background: 0.14 0.03 260;
+  --foreground: 0.93 0.01 260;
+  --card: 0.19 0.04 260;
+  --card-foreground: 0.93 0.01 260;
+  --popover: 0.19 0.04 260;
+  --popover-foreground: 0.93 0.01 260;
+  --primary: 0.62 0.2 260;
+  --primary-foreground: 0.98 0.003 260;
+  --secondary: 0.25 0.05 260;
+  --secondary-foreground: 0.85 0.04 260;
+  --muted: 0.24 0.035 260;
+  --muted-foreground: 0.65 0.06 260;
+  --accent: 0.55 0.18 230;
+  --accent-foreground: 0.95 0.01 230;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.3 0.05 260;
+  --input: 0.3 0.05 260;
+  --ring: 0.62 0.2 260;
+  --radius: 1.25rem;
+  --chart-1: 0.62 0.2 260;
+  --chart-2: 0.55 0.18 230;
+  --chart-3: 0.65 0.15 300;
+  --chart-4: 0.6 0.18 180;
+  --chart-5: 0.68 0.16 210;
+  --sidebar: 0.17 0.035 260;
+  --sidebar-foreground: 0.93 0.01 260;
+  --sidebar-primary: 0.62 0.2 260;
+  --sidebar-primary-foreground: 0.98 0.003 260;
+  --sidebar-accent: 0.55 0.18 230;
+  --sidebar-accent-foreground: 0.95 0.01 230;
+  --sidebar-border: 0.3 0.05 260;
+  --sidebar-ring: 0.62 0.2 260;
+}
+
+/* ---- Golden Hour ---- */
+[data-theme="golden-hour"] {
+  --background: 0.97 0.02 80;
+  --foreground: 0.2 0.05 55;
+  --card: 0.995 0.008 80;
+  --card-foreground: 0.2 0.05 55;
+  --popover: 0.995 0.008 80;
+  --popover-foreground: 0.2 0.05 55;
+  --primary: 0.65 0.2 55;
+  --primary-foreground: 0.98 0.003 0;
+  --secondary: 0.93 0.06 80;
+  --secondary-foreground: 0.38 0.1 60;
+  --muted: 0.94 0.03 80;
+  --muted-foreground: 0.5 0.08 60;
+  --accent: 0.88 0.12 40;
+  --accent-foreground: 0.25 0.1 40;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.88 0.07 80;
+  --input: 0.88 0.07 80;
+  --ring: 0.65 0.2 55;
+  --radius: 1.25rem;
+  --chart-1: 0.65 0.2 55;
+  --chart-2: 0.62 0.22 350;
+  --chart-3: 0.6 0.18 280;
+  --chart-4: 0.65 0.18 155;
+  --chart-5: 0.72 0.16 30;
+  --sidebar: 0.95 0.025 80;
+  --sidebar-foreground: 0.2 0.05 55;
+  --sidebar-primary: 0.65 0.2 55;
+  --sidebar-primary-foreground: 0.98 0.003 0;
+  --sidebar-accent: 0.88 0.12 40;
+  --sidebar-accent-foreground: 0.25 0.1 40;
+  --sidebar-border: 0.88 0.07 80;
+  --sidebar-ring: 0.65 0.2 55;
+}
+
+/* ---- Forest Green ---- */
+[data-theme="forest-green"] {
+  --background: 0.96 0.02 160;
+  --foreground: 0.18 0.045 150;
+  --card: 0.99 0.01 160;
+  --card-foreground: 0.18 0.045 150;
+  --popover: 0.99 0.01 160;
+  --popover-foreground: 0.18 0.045 150;
+  --primary: 0.5 0.16 160;
+  --primary-foreground: 0.98 0.003 0;
+  --secondary: 0.9 0.05 160;
+  --secondary-foreground: 0.32 0.1 155;
+  --muted: 0.93 0.03 160;
+  --muted-foreground: 0.5 0.08 155;
+  --accent: 0.85 0.1 145;
+  --accent-foreground: 0.22 0.1 145;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.87 0.06 160;
+  --input: 0.87 0.06 160;
+  --ring: 0.5 0.16 160;
+  --radius: 1.25rem;
+  --chart-1: 0.5 0.16 160;
+  --chart-2: 0.62 0.18 145;
+  --chart-3: 0.65 0.2 55;
+  --chart-4: 0.6 0.18 200;
+  --chart-5: 0.68 0.16 120;
+  --sidebar: 0.94 0.025 160;
+  --sidebar-foreground: 0.18 0.045 150;
+  --sidebar-primary: 0.5 0.16 160;
+  --sidebar-primary-foreground: 0.98 0.003 0;
+  --sidebar-accent: 0.85 0.1 145;
+  --sidebar-accent-foreground: 0.22 0.1 145;
+  --sidebar-border: 0.87 0.06 160;
+  --sidebar-ring: 0.5 0.16 160;
+}
+
+/* ---- Lavender Dream ---- */
+[data-theme="lavender-dream"] {
+  --background: 0.97 0.015 305;
+  --foreground: 0.2 0.045 300;
+  --card: 0.995 0.007 305;
+  --card-foreground: 0.2 0.045 300;
+  --popover: 0.995 0.007 305;
+  --popover-foreground: 0.2 0.045 300;
+  --primary: 0.6 0.2 305;
+  --primary-foreground: 0.98 0.003 0;
+  --secondary: 0.92 0.05 305;
+  --secondary-foreground: 0.38 0.1 300;
+  --muted: 0.94 0.025 305;
+  --muted-foreground: 0.52 0.08 300;
+  --accent: 0.88 0.1 280;
+  --accent-foreground: 0.25 0.1 280;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.88 0.05 305;
+  --input: 0.88 0.05 305;
+  --ring: 0.6 0.2 305;
+  --radius: 1.25rem;
+  --chart-1: 0.6 0.2 305;
+  --chart-2: 0.62 0.22 350;
+  --chart-3: 0.65 0.2 260;
+  --chart-4: 0.6 0.18 200;
+  --chart-5: 0.68 0.16 280;
+  --sidebar: 0.95 0.02 305;
+  --sidebar-foreground: 0.2 0.045 300;
+  --sidebar-primary: 0.6 0.2 305;
+  --sidebar-primary-foreground: 0.98 0.003 0;
+  --sidebar-accent: 0.88 0.1 280;
+  --sidebar-accent-foreground: 0.25 0.1 280;
+  --sidebar-border: 0.88 0.05 305;
+  --sidebar-ring: 0.6 0.2 305;
+}
+
+* {
+  border-color: oklch(var(--border));
+  box-sizing: border-box;
+}
+
+body {
+  background-color: oklch(var(--background));
+  color: oklch(var(--foreground));
+  font-family: "Figtree", system-ui, sans-serif;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(var(--border));
+  border-radius: 99px;
+}
+
+.font-display {
+  font-family: "Fraunces", Georgia, serif;
+}
