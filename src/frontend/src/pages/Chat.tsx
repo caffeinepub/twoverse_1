@@ -39,6 +39,17 @@ function reactionKey(msgId: bigint, emoji: string) {
   return `${msgId.toString()}_${emoji}`;
 }
 
+const SPARKLE_PARTICLES = [
+  { angle: 0, dist: 38, sym: "✨" },
+  { angle: 45, dist: 42, sym: "💫" },
+  { angle: 90, dist: 35, sym: "✨" },
+  { angle: 135, dist: 40, sym: "💫" },
+  { angle: 180, dist: 36, sym: "✨" },
+  { angle: 225, dist: 44, sym: "💫" },
+  { angle: 270, dist: 38, sym: "✨" },
+  { angle: 315, dist: 42, sym: "💫" },
+];
+
 export default function Chat() {
   const [displayName, setDisplayName] = useState<string>(
     () => localStorage.getItem("twoverse_display_name") || "",
@@ -49,6 +60,7 @@ export default function Chat() {
   const [pickerForMessage, setPickerForMessage] = useState<bigint | null>(null);
   const [myReactions, setMyReactionsState] =
     useState<Set<string>>(getMyReactions);
+  const [showSparkle, setShowSparkle] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], isLoading } = useGetAllMessages();
@@ -75,7 +87,11 @@ export default function Chat() {
     sendMessage.mutate(
       { senderName: displayName, content },
       {
-        onSuccess: () => setMessage(""),
+        onSuccess: () => {
+          setMessage("");
+          setShowSparkle(true);
+          setTimeout(() => setShowSparkle(false), 700);
+        },
         onError: () => toast.error("Couldn't send message"),
       },
     );
@@ -182,7 +198,9 @@ export default function Chat() {
                 initial={{ opacity: 0, y: 10, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.25 }}
-                className={`flex flex-col ${isMine ? "items-end" : "items-start"} gap-1`}
+                className={`flex flex-col ${
+                  isMine ? "items-end" : "items-start"
+                } gap-1`}
               >
                 <span
                   className="text-[11px] px-1 font-medium"
@@ -233,7 +251,9 @@ export default function Chat() {
                         initial={{ opacity: 0, scale: 0.85, y: 4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.85, y: 4 }}
-                        className={`absolute z-20 bottom-full mb-2 rounded-2xl shadow-card-hover px-3 py-2 flex gap-1 ${isMine ? "right-0" : "left-0"}`}
+                        className={`absolute z-20 bottom-full mb-2 rounded-2xl shadow-card-hover px-3 py-2 flex gap-1 ${
+                          isMine ? "right-0" : "left-0"
+                        }`}
                         style={{
                           background: "rgba(0,0,0,0.50)",
                           backdropFilter: "blur(12px)",
@@ -307,7 +327,7 @@ export default function Chat() {
           borderColor: "rgba(255,255,255,0.15)",
         }}
       >
-        <div className="flex gap-2">
+        <div className="flex gap-2 relative">
           <Input
             data-ocid="chat.input"
             value={message}
@@ -327,15 +347,49 @@ export default function Chat() {
             }}
             disabled={!displayName || sendMessage.isPending}
           />
-          <Button
-            data-ocid="chat.send_button"
-            size="icon"
-            onClick={handleSend}
-            disabled={!message.trim() || !displayName || sendMessage.isPending}
-            className="rounded-2xl shrink-0"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+          <div className="relative">
+            <Button
+              data-ocid="chat.send_button"
+              size="icon"
+              onClick={handleSend}
+              disabled={
+                !message.trim() || !displayName || sendMessage.isPending
+              }
+              className="rounded-2xl shrink-0"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+            {/* Sparkle burst on send */}
+            <AnimatePresence>
+              {showSparkle &&
+                SPARKLE_PARTICLES.map((p) => {
+                  const rad = (p.angle * Math.PI) / 180;
+                  const tx = Math.cos(rad) * p.dist;
+                  const ty = Math.sin(rad) * p.dist;
+                  return (
+                    <motion.span
+                      key={p.angle}
+                      initial={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                      animate={{ opacity: 0, x: tx, y: ty, scale: 0.4 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%,-50%)",
+                        fontSize: "10px",
+                        pointerEvents: "none",
+                        zIndex: 50,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {p.sym}
+                    </motion.span>
+                  );
+                })}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 

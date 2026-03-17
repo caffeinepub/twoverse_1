@@ -205,6 +205,206 @@
   --btn-shadow: rgba(165, 90, 220, 0.4);
 }
 
+/* ---- Cherry Blossom ---- */
+[data-theme="cherry-blossom"] {
+  --background: 0.22 0.06 350;
+  --foreground: 0.95 0.01 350;
+  --card: 0.28 0.07 350;
+  --card-foreground: 0.95 0.01 350;
+  --popover: 0.28 0.07 350;
+  --popover-foreground: 0.95 0.01 350;
+  --primary: 0.65 0.22 352;
+  --primary-foreground: 0.98 0.003 0;
+  --secondary: 0.32 0.08 350;
+  --secondary-foreground: 0.88 0.04 350;
+  --muted: 0.3 0.06 350;
+  --muted-foreground: 0.7 0.07 350;
+  --accent: 0.55 0.18 340;
+  --accent-foreground: 0.95 0.01 340;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.38 0.08 350;
+  --input: 0.38 0.08 350;
+  --ring: 0.65 0.22 352;
+  --radius: 1.25rem;
+  --chart-1: 0.65 0.22 352;
+  --chart-2: 0.6 0.18 340;
+  --chart-3: 0.68 0.16 280;
+  --chart-4: 0.62 0.18 20;
+  --chart-5: 0.7 0.15 310;
+  --sidebar: 0.25 0.065 350;
+  --sidebar-foreground: 0.95 0.01 350;
+  --sidebar-primary: 0.65 0.22 352;
+  --sidebar-primary-foreground: 0.98 0.003 0;
+  --sidebar-accent: 0.55 0.18 340;
+  --sidebar-accent-foreground: 0.95 0.01 340;
+  --sidebar-border: 0.38 0.08 350;
+  --sidebar-ring: 0.65 0.22 352;
+  --btn-gradient-from: 0.7 0.22 348;
+  --btn-gradient-to: 0.55 0.26 355;
+  --btn-shadow: rgba(232, 83, 122, 0.45);
+}
+
+/* ---- Velvet Night ---- */
+[data-theme="velvet-night"] {
+  --background: 0.12 0.04 340;
+  --foreground: 0.93 0.01 340;
+  --card: 0.17 0.05 340;
+  --card-foreground: 0.93 0.01 340;
+  --popover: 0.17 0.05 340;
+  --popover-foreground: 0.93 0.01 340;
+  --primary: 0.52 0.2 345;
+  --primary-foreground: 0.98 0.003 0;
+  --secondary: 0.22 0.06 340;
+  --secondary-foreground: 0.8 0.04 340;
+  --muted: 0.2 0.04 340;
+  --muted-foreground: 0.62 0.07 340;
+  --accent: 0.48 0.16 320;
+  --accent-foreground: 0.95 0.01 320;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.28 0.07 340;
+  --input: 0.28 0.07 340;
+  --ring: 0.52 0.2 345;
+  --radius: 1.25rem;
+  --chart-1: 0.52 0.2 345;
+  --chart-2: 0.58 0.18 320;
+  --chart-3: 0.62 0.16 280;
+  --chart-4: 0.55 0.18 0;
+  --chart-5: 0.65 0.14 300;
+  --sidebar: 0.15 0.045 340;
+  --sidebar-foreground: 0.93 0.01 340;
+  --sidebar-primary: 0.52 0.2 345;
+  --sidebar-primary-foreground: 0.98 0.003 0;
+  --sidebar-accent: 0.48 0.16 320;
+  --sidebar-accent-foreground: 0.95 0.01 320;
+  --sidebar-border: 0.28 0.07 340;
+  --sidebar-ring: 0.52 0.2 345;
+  --btn-gradient-from: 0.58 0.2 340;
+  --btn-gradient-to: 0.4 0.24 348;
+  --btn-shadow: rgba(139, 34, 82, 0.5);
+}
+
+/* ---- Ocean Breeze ---- */
+[data-theme="ocean-breeze"] {
+  --background: 0.16 0.04 200;
+  --foreground: 0.93 0.01 200;
+  --card: 0.21 0.05 200;
+  --card-foreground: 0.93 0.01 200;
+  --popover: 0.21 0.05 200;
+  --popover-foreground: 0.93 0.01 200;
+  --primary: 0.58 0.18 200;
+  --primary-foreground: 0.98 0.003 0;
+  --secondary: 0.26 0.06 200;
+  --secondary-foreground: 0.85 0.04 200;
+  --muted: 0.24 0.04 200;
+  --muted-foreground: 0.65 0.07 200;
+  --accent: 0.65 0.16 190;
+  --accent-foreground: 0.12 0.04 200;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.32 0.07 200;
+  --input: 0.32 0.07 200;
+  --ring: 0.58 0.18 200;
+  --radius: 1.25rem;
+  --chart-1: 0.58 0.18 200;
+  --chart-2: 0.65 0.16 190;
+  --chart-3: 0.55 0.15 220;
+  --chart-4: 0.62 0.18 160;
+  --chart-5: 0.68 0.14 210;
+  --sidebar: 0.18 0.045 200;
+  --sidebar-foreground: 0.93 0.01 200;
+  --sidebar-primary: 0.58 0.18 200;
+  --sidebar-primary-foreground: 0.98 0.003 0;
+  --sidebar-accent: 0.65 0.16 190;
+  --sidebar-accent-foreground: 0.12 0.04 200;
+  --sidebar-border: 0.32 0.07 200;
+  --sidebar-ring: 0.58 0.18 200;
+  --btn-gradient-from: 0.65 0.18 198;
+  --btn-gradient-to: 0.48 0.22 205;
+  --btn-shadow: rgba(27, 143, 160, 0.45);
+}
+
+/* ---- Coral Bliss ---- */
+[data-theme="coral-bliss"] {
+  --background: 0.2 0.05 28;
+  --foreground: 0.93 0.01 28;
+  --card: 0.26 0.06 28;
+  --card-foreground: 0.93 0.01 28;
+  --popover: 0.26 0.06 28;
+  --popover-foreground: 0.93 0.01 28;
+  --primary: 0.63 0.22 32;
+  --primary-foreground: 0.98 0.003 0;
+  --secondary: 0.3 0.07 28;
+  --secondary-foreground: 0.85 0.04 28;
+  --muted: 0.28 0.05 28;
+  --muted-foreground: 0.65 0.07 28;
+  --accent: 0.7 0.18 40;
+  --accent-foreground: 0.15 0.05 28;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.35 0.08 28;
+  --input: 0.35 0.08 28;
+  --ring: 0.63 0.22 32;
+  --radius: 1.25rem;
+  --chart-1: 0.63 0.22 32;
+  --chart-2: 0.68 0.18 45;
+  --chart-3: 0.58 0.2 15;
+  --chart-4: 0.65 0.16 60;
+  --chart-5: 0.7 0.14 350;
+  --sidebar: 0.23 0.055 28;
+  --sidebar-foreground: 0.93 0.01 28;
+  --sidebar-primary: 0.63 0.22 32;
+  --sidebar-primary-foreground: 0.98 0.003 0;
+  --sidebar-accent: 0.7 0.18 40;
+  --sidebar-accent-foreground: 0.15 0.05 28;
+  --sidebar-border: 0.35 0.08 28;
+  --sidebar-ring: 0.63 0.22 32;
+  --btn-gradient-from: 0.68 0.22 30;
+  --btn-gradient-to: 0.52 0.26 22;
+  --btn-shadow: rgba(232, 86, 42, 0.45);
+}
+
+/* ---- Starlight Silver ---- */
+[data-theme="starlight-silver"] {
+  --background: 0.13 0.025 245;
+  --foreground: 0.93 0.01 245;
+  --card: 0.18 0.03 245;
+  --card-foreground: 0.93 0.01 245;
+  --popover: 0.18 0.03 245;
+  --popover-foreground: 0.93 0.01 245;
+  --primary: 0.62 0.12 250;
+  --primary-foreground: 0.98 0.003 0;
+  --secondary: 0.24 0.04 245;
+  --secondary-foreground: 0.85 0.03 245;
+  --muted: 0.22 0.03 245;
+  --muted-foreground: 0.65 0.06 245;
+  --accent: 0.7 0.1 240;
+  --accent-foreground: 0.12 0.03 245;
+  --destructive: 0.58 0.22 25;
+  --destructive-foreground: 0.98 0.003 0;
+  --border: 0.3 0.05 245;
+  --input: 0.3 0.05 245;
+  --ring: 0.62 0.12 250;
+  --radius: 1.25rem;
+  --chart-1: 0.62 0.12 250;
+  --chart-2: 0.7 0.1 240;
+  --chart-3: 0.58 0.14 270;
+  --chart-4: 0.65 0.1 220;
+  --chart-5: 0.68 0.08 260;
+  --sidebar: 0.16 0.028 245;
+  --sidebar-foreground: 0.93 0.01 245;
+  --sidebar-primary: 0.62 0.12 250;
+  --sidebar-primary-foreground: 0.98 0.003 0;
+  --sidebar-accent: 0.7 0.1 240;
+  --sidebar-accent-foreground: 0.12 0.03 245;
+  --sidebar-border: 0.3 0.05 245;
+  --sidebar-ring: 0.62 0.12 250;
+  --btn-gradient-from: 0.68 0.12 248;
+  --btn-gradient-to: 0.52 0.16 256;
+  --btn-shadow: rgba(128, 144, 192, 0.4);
+}
+
 * {
   border-color: oklch(var(--border));
   box-sizing: border-box;
@@ -275,6 +475,40 @@ html {
   );
   border-radius: inherit;
   pointer-events: none;
+}
+
+/* Shimmer sweep on hover */
+@keyframes btn-shimmer {
+  0% {
+    transform: translateX(-120%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-15deg);
+  }
+}
+
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 100%
+  );
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-120%) skewX(-15deg);
+}
+
+.btn-primary:hover::after {
+  opacity: 1;
+  animation: btn-shimmer 0.55s ease forwards;
 }
 
 .btn-primary:hover {

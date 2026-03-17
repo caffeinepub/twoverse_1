@@ -1,4 +1,5 @@
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   nanoToDate,
@@ -17,6 +18,14 @@ const EMOTIONS: { emoji: string; label: string }[] = [
   { emoji: "😢", label: "Sad" },
 ];
 
+const HEART_BURST = [
+  { sym: "💕", offset: -2 },
+  { sym: "🩷", offset: -1 },
+  { sym: "❤️", offset: 0 },
+  { sym: "💖", offset: 1 },
+  { sym: "💗", offset: 2 },
+];
+
 const isToday = (ts: bigint) => {
   const d = nanoToDate(ts);
   const now = new Date();
@@ -32,6 +41,7 @@ export default function Dashboard() {
   const { data: prompt } = useGetTodaysPrompt();
   const { data: checkIns } = useGetAllCheckIns();
   const addCheckIn = useAddCheckIn();
+  const [showHeartBurst, setShowHeartBurst] = useState(false);
 
   const todaysCheckIn = checkIns?.find((c) => isToday(c.timestamp));
 
@@ -43,8 +53,11 @@ export default function Dashboard() {
     addCheckIn.mutate(
       { emotion: label.toLowerCase(), note: null },
       {
-        onSuccess: () =>
-          toast.success(`Feeling ${label.toLowerCase()} noted! 💕`),
+        onSuccess: () => {
+          toast.success(`Feeling ${label.toLowerCase()} noted! 💕`);
+          setShowHeartBurst(true);
+          setTimeout(() => setShowHeartBurst(false), 900);
+        },
         onError: () => toast.error("Couldn't save your check-in"),
       },
     );
@@ -163,7 +176,7 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="rounded-3xl shadow-card p-5 border"
+        className="rounded-3xl shadow-card p-5 border relative overflow-visible"
         style={{
           background: "rgba(255,255,255,0.15)",
           backdropFilter: "blur(12px)",
@@ -234,6 +247,48 @@ export default function Dashboard() {
             );
           })}
         </div>
+
+        {/* Heart burst on check-in */}
+        <AnimatePresence>
+          {showHeartBurst && (
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                pointerEvents: "none",
+                zIndex: 20,
+              }}
+            >
+              {HEART_BURST.map((h, i) => (
+                <motion.span
+                  key={h.sym}
+                  initial={{ opacity: 1, y: 0, x: h.offset * 22, scale: 1 }}
+                  animate={{
+                    opacity: 0,
+                    y: -70,
+                    x: h.offset * 28,
+                    scale: 1.5,
+                  }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    duration: 0.8,
+                    ease: "easeOut",
+                    delay: i * 0.06,
+                  }}
+                  style={{
+                    position: "absolute",
+                    fontSize: "22px",
+                    lineHeight: 1,
+                    transform: "translate(-50%, -50%)",
+                  }}
+                >
+                  {h.sym}
+                </motion.span>
+              ))}
+            </div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Footer */}

@@ -73,11 +73,14 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="mx-auto max-w-[430px]">
         <div
-          className="flex items-center justify-around px-2 pb-safe border-t"
+          className="flex items-center justify-around px-2 pb-safe"
           style={{
-            background: "rgba(0,0,0,0.35)",
-            backdropFilter: "blur(16px)",
-            borderColor: "rgba(255,255,255,0.15)",
+            background: "rgba(0,0,0,0.40)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            borderTop: "1px solid rgba(255,255,255,0.18)",
+            boxShadow:
+              "0 -1px 20px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.10)",
           }}
         >
           {navItems.map((item) => {
@@ -94,7 +97,7 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
                   <motion.div
                     layoutId="nav-pill"
                     className="absolute inset-0 rounded-xl"
-                    style={{ background: "rgba(255,255,255,0.15)" }}
+                    style={{ background: "rgba(255,255,255,0.18)" }}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
@@ -114,6 +117,12 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
                 >
                   {item.label}
                 </span>
+                {isActive && (
+                  <span
+                    className="relative z-10 w-[3px] h-[3px] rounded-full mt-0.5"
+                    style={{ background: "rgba(255,255,255,0.80)" }}
+                  />
+                )}
               </button>
             );
           })}
