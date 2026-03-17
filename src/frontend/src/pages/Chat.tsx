@@ -6,13 +6,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   nanoToDate,
   useAddReaction,
+  useDeleteMessage,
   useGetAllMessages,
   useRemoveReaction,
   useSendMessage,
@@ -55,6 +56,12 @@ const SPARKLE_PARTICLES = [
   { angle: 330, dist: 40, sym: SPARKLE_SYMBOLS[3] },
 ];
 
+interface ReplyTo {
+  id: bigint;
+  senderName: string;
+  content: string;
+}
+
 export default function Chat() {
   const [displayName, setDisplayName] = useState<string>(
     () => localStorage.getItem("twoverse_display_name") || "",
@@ -66,12 +73,22 @@ export default function Chat() {
   const [myReactions, setMyReactionsState] =
     useState<Set<string>>(getMyReactions);
   const [showSparkle, setShowSparkle] = useState(false);
+  const [longPressMessageId, setLongPressMessageId] = useState<bigint | null>(
+    null,
+  );
+  const [replyTo, setReplyTo] = useState<ReplyTo | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const swipeStartXRef = useRef<number | null>(null);
+  const swipeMsgIdRef = useRef<bigint | null>(null);
+  const [swipingId, setSwipingId] = useState<bigint | null>(null);
+  const [swipeOffsets, setSwipeOffsets] = useState<Record<string, number>>({});
 
   const { data: messages = [], isLoading } = useGetAllMessages();
   const sendMessage = useSendMessage();
   const addReaction = useAddReaction();
   const removeReaction = useRemoveReaction();
+  const deleteMessage = useDeleteMessage();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to bottom when messages change
   useEffect(() => {
@@ -87,13 +104,20 @@ export default function Chat() {
   };
 
   const handleSend = () => {
-    const content = message.trim();
+    let content = message.trim();
     if (!content || !displayName) return;
+
+    if (replyTo) {
+      const preview = replyTo.content.slice(0, 40);
+      content = `↩️ ${replyTo.senderName}: ${preview}\n---\n${content}`;
+    }
+
     sendMessage.mutate(
       { senderName: displayName, content },
       {
         onSuccess: () => {
           setMessage("");
+          setReplyTo(null);
           setShowSparkle(true);
           setTimeout(() => setShowSparkle(false), 700);
         },
@@ -123,11 +147,68 @@ export default function Chat() {
     setPickerForMessage(null);
   };
 
+  const handleDeleteMessage = (id: bigint) => {
+    deleteMessage.mutate(id, {
+      onError: () => toast.error("Couldn't delete message"),
+    });
+    setLongPressMessageId(null);
+  };
+
   const formatTime = (ts: bigint) => {
     return nanoToDate(ts).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const dismissLongPress = () => setLongPressMessageId(null);
+
+  const handlePointerDown = (msgId: bigint, e: React.PointerEvent) => {
+    longPressTimerRef.current = setTimeout(() => {
+      setLongPressMessageId(msgId);
+      setPickerForMessage(null);
+    }, 500);
+    swipeStartXRef.current = e.clientX;
+    swipeMsgIdRef.current = msgId;
+  };
+
+  const handlePointerMove = (msgId: bigint, e: React.PointerEvent) => {
+    if (longPressTimerRef.current) {
+      const dx = Math.abs(e.clientX - (swipeStartXRef.current ?? e.clientX));
+      if (dx > 8) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    }
+    if (swipeStartXRef.current !== null && swipeMsgIdRef.current === msgId) {
+      const delta = e.clientX - swipeStartXRef.current;
+      if (delta > 0 && delta < 100) {
+        setSwipingId(msgId);
+        setSwipeOffsets((prev) => ({ ...prev, [msgId.toString()]: delta }));
+      }
+    }
+  };
+
+  const handlePointerUp = (msgId: bigint) => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    const offset = swipeOffsets[msgId.toString()] ?? 0;
+    if (offset > 60 && swipeMsgIdRef.current === msgId) {
+      const msg = messages.find((m) => m.id === msgId);
+      if (msg) {
+        setReplyTo({
+          id: msgId,
+          senderName: msg.senderName,
+          content: msg.content,
+        });
+      }
+    }
+    setSwipingId(null);
+    setSwipeOffsets((prev) => ({ ...prev, [msgId.toString()]: 0 }));
+    swipeStartXRef.current = null;
+    swipeMsgIdRef.current = null;
   };
 
   return (
@@ -192,10 +273,24 @@ export default function Chat() {
             </p>
           </div>
         )}
+
+        {/* Dismiss long press menu when tapping elsewhere */}
+        {longPressMessageId && (
+          <button
+            type="button"
+            aria-label="Dismiss menu"
+            className="fixed inset-0 z-10 w-full h-full cursor-default"
+            onClick={dismissLongPress}
+            onKeyDown={(e) => e.key === "Escape" && dismissLongPress()}
+          />
+        )}
+
         <AnimatePresence initial={false}>
           {messages.map((msg, idx) => {
             const isMine = msg.senderName === displayName;
             const isPickerOpen = pickerForMessage === msg.id;
+            const isActionOpen = longPressMessageId === msg.id;
+            const swipeOffset = swipeOffsets[msg.id.toString()] ?? 0;
             return (
               <motion.div
                 key={msg.id.toString()}
@@ -215,14 +310,40 @@ export default function Chat() {
                 </span>
 
                 <div className="relative">
-                  <button
+                  {/* Swipe reply indicator */}
+                  {swipingId === msg.id && swipeOffset > 10 && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: swipeOffset / 80 }}
+                      className="absolute top-1/2 -translate-y-1/2 text-lg pointer-events-none"
+                      style={{
+                        left: isMine ? "auto" : "-28px",
+                        right: isMine ? "-28px" : "auto",
+                      }}
+                    >
+                      ↩️
+                    </motion.div>
+                  )}
+
+                  <motion.button
                     type="button"
-                    onClick={() =>
-                      setPickerForMessage(isPickerOpen ? null : msg.id)
-                    }
-                    className="rounded-3xl px-4 py-2.5 max-w-[260px] text-left shadow-xs transition-all"
-                    style={
-                      isMine
+                    animate={{
+                      x: swipingId === msg.id ? swipeOffset * 0.4 : 0,
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    onPointerDown={(e) => handlePointerDown(msg.id, e)}
+                    onPointerMove={(e) => handlePointerMove(msg.id, e)}
+                    onPointerUp={() => handlePointerUp(msg.id)}
+                    onPointerLeave={() => handlePointerUp(msg.id)}
+                    onClick={() => {
+                      if (!longPressMessageId) {
+                        setPickerForMessage(isPickerOpen ? null : msg.id);
+                      }
+                    }}
+                    className="rounded-3xl px-4 py-2.5 max-w-[260px] text-left shadow-xs transition-all touch-pan-y"
+                    style={{
+                      userSelect: "none",
+                      ...(isMine
                         ? {
                             background: "rgba(255,255,255,0.30)",
                             backdropFilter: "blur(8px)",
@@ -233,11 +354,11 @@ export default function Chat() {
                             backdropFilter: "blur(8px)",
                             border: "1px solid rgba(255,255,255,0.15)",
                             borderRadius: "18px 18px 18px 4px",
-                          }
-                    }
+                          }),
+                    }}
                   >
                     <p
-                      className="text-sm leading-relaxed break-words"
+                      className="text-sm leading-relaxed break-words whitespace-pre-line"
                       style={{ color: "rgba(255,255,255,0.95)" }}
                     >
                       {msg.content}
@@ -248,10 +369,48 @@ export default function Chat() {
                     >
                       {formatTime(msg.timestamp)}
                     </p>
-                  </button>
+                  </motion.button>
 
+                  {/* Long press action menu */}
                   <AnimatePresence>
-                    {isPickerOpen && (
+                    {isActionOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.85, y: 4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.85, y: 4 }}
+                        className={`absolute z-30 bottom-full mb-2 rounded-2xl shadow-lg px-2 py-1.5 flex gap-1 items-center ${
+                          isMine ? "right-0" : "left-0"
+                        }`}
+                        style={{
+                          background: "rgba(20,20,30,0.90)",
+                          backdropFilter: "blur(14px)",
+                          border: "1px solid rgba(255,255,255,0.18)",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          data-ocid={`chat.delete_button.${idx + 1}`}
+                          onClick={() => handleDeleteMessage(msg.id)}
+                          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl transition-all hover:bg-red-500/30"
+                          style={{ color: "rgba(255,100,100,0.95)" }}
+                        >
+                          🗑️ Delete
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLongPressMessageId(null)}
+                          className="text-xs px-2 py-1.5 rounded-xl transition-all hover:bg-white/10"
+                          style={{ color: "rgba(255,255,255,0.60)" }}
+                        >
+                          ✕
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Reaction picker */}
+                  <AnimatePresence>
+                    {isPickerOpen && !isActionOpen && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.85, y: 4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -323,6 +482,51 @@ export default function Chat() {
         <div ref={bottomRef} />
       </div>
 
+      {/* Reply preview strip */}
+      <AnimatePresence>
+        {replyTo && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="px-4 py-2 flex items-center gap-2"
+            style={{
+              background: "rgba(0,0,0,0.30)",
+              backdropFilter: "blur(10px)",
+              borderTop: "1px solid rgba(255,255,255,0.10)",
+            }}
+          >
+            <div
+              className="w-1 self-stretch rounded-full flex-shrink-0"
+              style={{ background: "rgba(255,200,200,0.7)", minHeight: "32px" }}
+            />
+            <div className="flex-1 min-w-0">
+              <p
+                className="text-[11px] font-semibold"
+                style={{ color: "rgba(255,200,200,0.9)" }}
+              >
+                {replyTo.senderName}
+              </p>
+              <p
+                className="text-[11px] truncate"
+                style={{ color: "rgba(255,255,255,0.55)" }}
+              >
+                {replyTo.content.slice(0, 60)}
+              </p>
+            </div>
+            <button
+              type="button"
+              data-ocid="chat.cancel_button"
+              onClick={() => setReplyTo(null)}
+              className="p-1 rounded-full hover:bg-white/10 transition-colors flex-shrink-0"
+              style={{ color: "rgba(255,255,255,0.60)" }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Input */}
       <div
         className="px-4 py-3 border-t"
@@ -343,11 +547,17 @@ export default function Chat() {
                 handleSend();
               }
             }}
-            placeholder="Type a message... 💕"
+            placeholder={
+              replyTo
+                ? `Replying to ${replyTo.senderName}... 💕`
+                : "Type a message... 💕"
+            }
             className="flex-1 rounded-2xl text-sm"
             style={{
               background: "rgba(255,255,255,0.15)",
-              borderColor: "rgba(255,255,255,0.25)",
+              borderColor: replyTo
+                ? "rgba(255,200,200,0.40)"
+                : "rgba(255,255,255,0.25)",
               color: "rgba(255,255,255,0.95)",
             }}
             disabled={!displayName || sendMessage.isPending}

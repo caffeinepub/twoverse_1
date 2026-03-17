@@ -109,6 +109,18 @@ export function useSendMessage() {
   });
 }
 
+export function useDeleteMessage() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.deleteMessage(id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["messages"] }),
+  });
+}
+
 export function useAddReaction() {
   const { actor } = useActor();
   const qc = useQueryClient();
@@ -363,4 +375,297 @@ export function useSubmitQuizAnswer() {
   });
 }
 
+// ---- Version 9A ----
+
+export function useGetStreakCount() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["streakCount"],
+    queryFn: async () => {
+      if (!actor) return 0n;
+      return (actor as any).getStreakCount() as Promise<bigint>;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetRelationshipXP() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["relationshipXP"],
+    queryFn: async () => {
+      if (!actor) return 0n;
+      return (actor as any).getRelationshipXP() as Promise<bigint>;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+// Love Letters
+export function useGetAllLoveLetters() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["loveLetters"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return (actor as any).getAllLoveLetters() as Promise<
+        Array<{
+          id: bigint;
+          title: string;
+          content: string;
+          authorName: string;
+          createdAt: bigint;
+        }>
+      >;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddLoveLetter() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      title,
+      authorName,
+      content,
+    }: { title: string; authorName: string; content: string }) => {
+      if (!actor) throw new Error("Actor not ready");
+      return (actor as any).addLoveLetter(title, authorName, content);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["loveLetters"] }),
+  });
+}
+
+export function useDeleteLoveLetter() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return (actor as any).deleteLoveLetter(id) as Promise<boolean>;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["loveLetters"] }),
+  });
+}
+
+// Photo of the Day
+export function useGetAllPhotosOfDay() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["photosOfDay"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return (actor as any).getAllPhotosOfDay() as Promise<
+        Array<{
+          id: bigint;
+          caption: string;
+          photo: import("@/backend").ExternalBlob;
+          date: string;
+          createdAt: bigint;
+        }>
+      >;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTodaysPhoto() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["todaysPhoto"],
+    queryFn: async () => {
+      if (!actor) return null;
+      const result = (await (actor as any).getTodaysPhoto()) as Array<{
+        id: bigint;
+        caption: string;
+        photo: import("@/backend").ExternalBlob;
+        date: string;
+        createdAt: bigint;
+      }>;
+      return result.length > 0 ? result[0] : null;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddPhotoOfDay() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      caption,
+      photoBytes,
+      date,
+    }: { caption: string; photoBytes: Uint8Array; date: string }) => {
+      if (!actor) throw new Error("Actor not ready");
+      const photo = ExternalBlob.fromBytes(
+        photoBytes as Uint8Array<ArrayBuffer>,
+      );
+      return (actor as any).addPhotoOfDay(caption, photo, date);
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["photosOfDay", "todaysPhoto"] }),
+  });
+}
+
+export function useDeletePhotoOfDay() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return (actor as any).deletePhotoOfDay(id) as Promise<boolean>;
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["photosOfDay", "todaysPhoto"] }),
+  });
+}
+
+// Couple Challenges
+export function useGetCurrentWeekChallenges() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["weeklyChallenges"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return (actor as any).getCurrentWeekChallenges() as Promise<
+        Array<{
+          id: bigint;
+          title: string;
+          description: string;
+          targetCount: bigint;
+          currentCount: bigint;
+          weekStartTimestamp: bigint;
+          isCompleted: boolean;
+        }>
+      >;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useIncrementChallengeProgress() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return (actor as any).incrementChallengeProgress(id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["weeklyChallenges"] }),
+  });
+}
+
+export function useInitWeeklyChallenges() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error("Actor not ready");
+      return (actor as any).initWeeklyChallenges();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["weeklyChallenges"] }),
+  });
+}
+
+export function useResetWeeklyChallenges() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error("Actor not ready");
+      return (actor as any).resetWeeklyChallenges();
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["weeklyChallenges"] }),
+  });
+}
+
 export { nanoToDate };
+
+export function useGetMoodPrediction() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["moodPrediction"],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.getMoodPrediction();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetSeasonalThemeEnabled() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["seasonalThemeEnabled"],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.getSeasonalThemeEnabled();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetSeasonalThemeEnabled() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (enabled: boolean) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.setSeasonalThemeEnabled(enabled);
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["seasonalThemeEnabled"] }),
+  });
+}
+
+export function useGetCoachTipSeed() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["coachTipSeed"],
+    queryFn: async () => {
+      if (!actor) return BigInt(0);
+      return actor.getCoachTipSeed();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetCoachTipSeed() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (seed: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.setCoachTipSeed(seed);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["coachTipSeed"] }),
+  });
+}
+
+export function useGetConversationStarterSeed() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["conversationStarterSeed"],
+    queryFn: async () => {
+      if (!actor) return BigInt(0);
+      return actor.getConversationStarterSeed();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSetConversationStarterSeed() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (seed: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.setConversationStarterSeed(seed);
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["conversationStarterSeed"] }),
+  });
+}

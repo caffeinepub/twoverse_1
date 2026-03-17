@@ -146,20 +146,92 @@ export const THEMES = [
 
 export type ThemeId = (typeof THEMES)[number]["id"];
 
+export type FontColorMode = "auto" | "manual";
+export type DayNightMode = "auto" | "day" | "night";
+
+/** Return white or near-black depending on bg luminance */
+export function autoContrastColor(bgHex: string): string {
+  const hex = bgHex.replace("#", "");
+  const r = Number.parseInt(hex.substring(0, 2), 16) / 255;
+  const g = Number.parseInt(hex.substring(2, 4), 16) / 255;
+  const b = Number.parseInt(hex.substring(4, 6), 16) / 255;
+  // Linearize
+  const toLinear = (c: number) =>
+    c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  const lum =
+    0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  return lum > 0.179 ? "#1a1a2e" : "#ffffff";
+}
+
+export function loadGoogleFont(fontName: string) {
+  const id = `gfont-${fontName.replace(/\s+/g, "-").toLowerCase()}`;
+  if (document.getElementById(id)) return;
+  const link = document.createElement("link");
+  link.id = id;
+  link.rel = "stylesheet";
+  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600;700&display=swap`;
+  document.head.appendChild(link);
+}
+
+function computeIsNight(mode: DayNightMode): boolean {
+  if (mode === "night") return true;
+  if (mode === "day") return false;
+  const hour = new Date().getHours();
+  return hour >= 19 || hour < 6;
+}
+
 interface ThemeContextValue {
   theme: ThemeId;
   setTheme: (theme: ThemeId) => void;
   heartColor: string;
   themeData: (typeof THEMES)[number];
+  fontFamily: string;
+  setFontFamily: (f: string) => void;
+  fontColorMode: FontColorMode;
+  setFontColorMode: (m: FontColorMode) => void;
+  fontColor: string;
+  setFontColor: (c: string) => void;
+  resolvedFontColor: string;
+  dayNightMode: DayNightMode;
+  setDayNightMode: (m: DayNightMode) => void;
+  isNightMode: boolean;
 }
 
 const defaultTheme = THEMES[0];
+
+function getSeasonalThemeId(): ThemeId {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  // Valentine's: Feb 1-14 → rose petal (deep red/pink)
+  if (month === 2 && day <= 14) return "velvet-night";
+  // Spring: Mar-May → cherry blossom / forest green
+  if (month >= 3 && month <= 5) return "forest-green";
+  // Summer: Jun-Aug → coral bliss / golden hour
+  if (month >= 6 && month <= 8) return "coral-bliss";
+  // Autumn: Sep-Nov → golden hour
+  if (month >= 9 && month <= 11) return "golden-hour";
+  // Christmas: Dec 1-25 → velvet night
+  if (month === 12 && day <= 25) return "cherry-blossom";
+  // New Year: Dec 26 - Jan 7 → starlight silver
+  return "starlight-silver";
+}
 
 const ThemeContext = createContext<ThemeContextValue>({
   theme: "rose-petal",
   setTheme: () => {},
   heartColor: "rgba(255, 110, 140, ",
   themeData: defaultTheme,
+  fontFamily: "Nunito",
+  setFontFamily: () => {},
+  fontColorMode: "auto",
+  setFontColorMode: () => {},
+  fontColor: "#ffffff",
+  setFontColor: () => {},
+  resolvedFontColor: "#ffffff",
+  dayNightMode: "auto",
+  setDayNightMode: () => {},
+  isNightMode: false,
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -168,20 +240,110 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return (saved as ThemeId) || "rose-petal";
   });
 
+  const [fontFamily, setFontFamilyState] = useState<string>(() => {
+    return localStorage.getItem("twoverse_font_family") || "Nunito";
+  });
+
+  const [fontColorMode, setFontColorModeState] = useState<FontColorMode>(() => {
+    return (
+      (localStorage.getItem("twoverse_font_color_mode") as FontColorMode) ||
+      "auto"
+    );
+  });
+
+  const [fontColor, setFontColorState] = useState<string>(() => {
+    return localStorage.getItem("twoverse_font_color") || "#ffffff";
+  });
+
+  const [dayNightMode, setDayNightModeState] = useState<DayNightMode>(() => {
+    return (
+      (localStorage.getItem("twoverse_daynight") as DayNightMode) || "auto"
+    );
+  });
+
+  const [isNightMode, setIsNightMode] = useState(() =>
+    computeIsNight(
+      (localStorage.getItem("twoverse_daynight") as DayNightMode) || "auto",
+    ),
+  );
+
   const setTheme = (t: ThemeId) => {
     setThemeState(t);
     localStorage.setItem("twoverse_theme", t);
   };
 
+  const setFontFamily = (f: string) => {
+    setFontFamilyState(f);
+    localStorage.setItem("twoverse_font_family", f);
+    loadGoogleFont(f);
+  };
+
+  const setFontColorMode = (m: FontColorMode) => {
+    setFontColorModeState(m);
+    localStorage.setItem("twoverse_font_color_mode", m);
+  };
+
+  const setFontColor = (c: string) => {
+    setFontColorState(c);
+    localStorage.setItem("twoverse_font_color", c);
+  };
+
+  const setDayNightMode = (m: DayNightMode) => {
+    setDayNightModeState(m);
+    localStorage.setItem("twoverse_daynight", m);
+    setIsNightMode(computeIsNight(m));
+  };
+
+  // Load stored font on mount
+  useEffect(() => {
+    loadGoogleFont(fontFamily);
+  }, [fontFamily]);
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  const themeData = THEMES.find((t) => t.id === theme) ?? defaultTheme;
+  // Recompute night mode every minute for "auto" mode
+  useEffect(() => {
+    if (dayNightMode !== "auto") return;
+    const interval = setInterval(() => {
+      setIsNightMode(computeIsNight("auto"));
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [dayNightMode]);
+
+  // Read seasonal enabled from localStorage for sync access
+  const seasonalEnabled =
+    localStorage.getItem("twoverse_seasonal_theme") === "true";
+  const effectiveThemeId: ThemeId = seasonalEnabled
+    ? getSeasonalThemeId()
+    : theme;
+  const themeData =
+    THEMES.find((t) => t.id === effectiveThemeId) ?? defaultTheme;
   const heartColor = themeData.heartColor;
 
+  const resolvedFontColor =
+    fontColorMode === "auto" ? autoContrastColor(themeData.bgDeep) : fontColor;
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, heartColor, themeData }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        setTheme,
+        heartColor,
+        themeData,
+        fontFamily,
+        setFontFamily,
+        fontColorMode,
+        setFontColorMode,
+        fontColor,
+        setFontColor,
+        resolvedFontColor,
+        dayNightMode,
+        setDayNightMode,
+        isNightMode,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

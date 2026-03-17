@@ -4,8 +4,9 @@ import List "mo:core/List";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Int "mo:core/Int";
-import Runtime "mo:core/Runtime";
 import Order "mo:core/Order";
+import Runtime "mo:core/Runtime";
+import Iter "mo:core/Iter";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 
@@ -21,6 +22,18 @@ actor {
   module MemoryVaultEntry {
     public func compareByTimestamp(a : MemoryVaultEntry, b : MemoryVaultEntry) : Order.Order {
       Int.compare(a.timestamp, b.timestamp);
+    };
+  };
+
+  module PhotoOfDay {
+    public func compareByDate(a : PhotoOfDay, b : PhotoOfDay) : Order.Order {
+      Int.compare(b.date, a.date);
+    };
+  };
+
+  module LoveLetter {
+    public func compareByCreatedAt(a : LoveLetter, b : LoveLetter) : Order.Order {
+      Int.compare(b.createdAt, a.createdAt);
     };
   };
 
@@ -49,12 +62,6 @@ actor {
     emotion : Text;
     note : ?Text;
     timestamp : Int;
-  };
-
-  module CoupleMission {
-    public func compareByCompletedAt(a : CoupleMission, b : CoupleMission) : Order.Order {
-      Int.compare(a.completedAt, b.completedAt);
-    };
   };
 
   type CoupleMission = {
@@ -88,6 +95,32 @@ actor {
     timestamp : Int;
   };
 
+  type LoveLetter = {
+    id : Nat;
+    title : Text;
+    content : Text;
+    authorName : Text;
+    createdAt : Int;
+  };
+
+  type PhotoOfDay = {
+    id : Nat;
+    caption : Text;
+    photo : Storage.ExternalBlob;
+    date : Int;
+    createdAt : Int;
+  };
+
+  type CoupleChallenge = {
+    id : Nat;
+    title : Text;
+    description : Text;
+    targetCount : Nat;
+    currentCount : Nat;
+    weekStartTimestamp : Int;
+    isCompleted : Bool;
+  };
+
   // Stable variables
   var startDate : ?Int = null;
   var nextMessageId = 0;
@@ -95,6 +128,17 @@ actor {
   var nextMissionId = 0;
   var nextTimeCapsuleId = 0;
   var nextAnniversaryId = 0;
+  var nextLoveLetterId = 0;
+  var nextPhotoOfDayId = 0;
+  var sharedGoal : Text = "";
+  var streakCount : Nat = 0;
+  var lastStreakDay : Int = -1;
+
+  // New feature variables
+  var relationshipLevel : Nat = 1;
+  var coachTipSeed : Nat = 0;
+  var conversationStarterSeed : Nat = 0;
+  var seasonalThemeEnabled : Bool = true;
 
   // Data Stores
   let messages = Map.empty<Nat, ChatMessage>();
@@ -104,6 +148,9 @@ actor {
   let timeCapsules = Map.empty<Nat, TimeCapsuleMessage>();
   let anniversaries = Map.empty<Nat, Anniversary>();
   let quizAnswers = List.empty<QuizAnswer>();
+  let loveLetters = Map.empty<Nat, LoveLetter>();
+  let photosOfDay = Map.empty<Nat, PhotoOfDay>();
+  let challenges = Map.empty<Nat, CoupleChallenge>();
 
   let dailyPrompts : [Text] = [
     "Share a favorite memory from your relationship.",
@@ -120,25 +167,96 @@ actor {
     "Write a list of things you appreciate about your partner.",
     "Share your favorite tradition as a couple.",
     "Describe your first impression of each other.",
-    "Share a challenge you''ve overcome together.",
+    "Share a challenge you've overcome together.",
     "Write a list of places you want to visit together.",
     "Share your favorite meal together.",
     "Describe a perfect day spent together.",
     "Share a movie that reminds you of your partner.",
     "Write a list of things you want to do for your partner.",
     "Share a time your partner made you feel special.",
-    "Describe your partner''s best qualities.",
+    "Describe your partner's best qualities.",
     "Share a quote that represents your relationship.",
     "Write a list of surprises you want to do for your partner.",
     "Share your favorite way to spend time together.",
-    "Describe a difficult moment you''ve overcome as a couple.",
+    "Describe a difficult moment you've overcome as a couple.",
     "Share a book or story you want to read together.",
     "Write a list of things you want to try together.",
     "Share a message to your future selves.",
     "Describe your vision for your relationship in 5 years.",
   ];
 
-  // 1. Existing functionality
+  let coachTips : [Text] = [
+    "Listen actively to your partner's needs.",
+    "Make time for regular date nights.",
+    "Express appreciation daily.",
+    "Practice forgiveness and understanding.",
+    "Communicate openly and honestly.",
+    "Celebrate small victories together.",
+    "Support each other's growth.",
+    "Show affection in little ways.",
+    "Respect each other's differences.",
+    "Keep learning about each other.",
+  ];
+
+  let conversationStarters : [Text] = [
+    "What's a dream you haven't shared with many people?",
+    "What's something you'd like to learn together?",
+    "What's the best advice you've ever received?",
+    "What's your favorite memory from our relationship?",
+    "If you could travel anywhere right now, where would you go?",
+    "What's a goal you want to achieve this year?",
+    "What's something you're grateful for today?",
+    "What's a talent you wish you had?",
+    "What's your favorite way to relax together?",
+    "What's a challenge you want to overcome together?",
+  ];
+
+  // Relationship levels and XP thresholds
+  let levelThresholds = [
+    (1, 0),
+    (2, 500),
+    (3, 1500),
+    (4, 3000),
+    (5, 5000),
+    (6, 7500),
+    (7, 10500),
+    (8, 14000),
+    (9, 18000),
+    (10, 22500),
+    (11, 27500),
+    (12, 33000),
+    (13, 39000),
+    (14, 45500),
+    (15, 52500),
+  ];
+
+  // Initialize default weekly challenges
+  func initChallenges() {
+    if (challenges.size() == 0) {
+      let defaultChallenges : [(Nat, Text, Text, Nat)] = [
+        (0, "Sweet Messages", "Send 5 sweet messages to each other this week", 5),
+        (1, "Memory Makers", "Add 2 new memories to your vault this week", 2),
+        (2, "Check-In Champions", "Complete 5 daily check-ins this week", 5),
+        (3, "Mission Accomplished", "Complete 1 couple mission together", 1),
+        (4, "Love Letters", "Write a love letter to your partner", 1),
+      ];
+      let weekStart = (Time.now() / (7 * 24 * 60 * 60 * 1000000000)) * (7 * 24 * 60 * 60 * 1000000000);
+      for ((id, title, desc, target) in defaultChallenges.values()) {
+        let c : CoupleChallenge = {
+          id;
+          title;
+          description = desc;
+          targetCount = target;
+          currentCount = 0;
+          weekStartTimestamp = weekStart;
+          isCompleted = false;
+        };
+        challenges.add(id, c);
+      };
+    };
+  };
+
+  // 1. Core functionality
   public shared ({ caller }) func setStartDate(timestamp : Int) : async () {
     startDate := ?timestamp;
   };
@@ -156,6 +274,14 @@ actor {
         ?days;
       };
     };
+  };
+
+  public shared ({ caller }) func setSharedGoal(goal : Text) : async () {
+    sharedGoal := goal;
+  };
+
+  public query ({ caller }) func getSharedGoal() : async Text {
+    sharedGoal;
   };
 
   public shared ({ caller }) func sendMessage(senderName : Text, content : Text) : async () {
@@ -257,7 +383,7 @@ actor {
   public shared ({ caller }) func deleteMemory(memoryId : Nat) : async Bool {
     switch (memoryVault.get(memoryId)) {
       case (null) { false };
-      case (?memory) {
+      case (?_) {
         memoryVault.remove(memoryId);
         true;
       };
@@ -265,16 +391,33 @@ actor {
   };
 
   public shared ({ caller }) func addCheckIn(emotion : Text, note : ?Text) : async () {
+    let now = Time.now();
     let checkIn : CheckIn = {
       emotion;
       note;
-      timestamp = Time.now();
+      timestamp = now;
     };
-    checkIns.add(Time.now(), checkIn);
+    checkIns.add(now, checkIn);
+
+    // Update streak
+    let todayDay = now / (24 * 60 * 60 * 1000000000);
+    if (lastStreakDay == todayDay) {
+      // same day, no change
+    } else if (lastStreakDay == todayDay - 1) {
+      streakCount += 1;
+      lastStreakDay := todayDay;
+    } else {
+      streakCount := 1;
+      lastStreakDay := todayDay;
+    };
   };
 
   public query ({ caller }) func getAllCheckIns() : async [CheckIn] {
     checkIns.values().toArray();
+  };
+
+  public query ({ caller }) func getStreakCount() : async Nat {
+    streakCount;
   };
 
   public query ({ caller }) func getTodaysPrompt() : async Text {
@@ -282,9 +425,7 @@ actor {
     dailyPrompts[Int.abs(dayIndex)];
   };
 
-  // New features
-
-  // 2. Couple Missions (Each mission is with a status, not repeating, tracks xp)
+  // Couple Missions
   public shared ({ caller }) func addMission(title : Text, description : Text, xpReward : Nat) : async () {
     let mission : CoupleMission = {
       id = nextMissionId;
@@ -317,9 +458,7 @@ actor {
   };
 
   public query ({ caller }) func getAllMissions() : async [CoupleMission] {
-    // Return sorted by completedAt, nulls first
-    let ordered = missions.values().toArray().sort(CoupleMission.compareByCompletedAt);
-    ordered;
+    missions.values().toArray();
   };
 
   public query ({ caller }) func getTotalXP() : async Nat {
@@ -332,7 +471,21 @@ actor {
     totalXP;
   };
 
-  // 3. Time Capsule Messages (future unlock date)
+  public query ({ caller }) func getRelationshipXP() : async Nat {
+    var xp = 0;
+    for (mission in missions.values()) {
+      if (mission.isCompleted) {
+        xp += mission.xpReward;
+      };
+    };
+    xp += checkIns.size() * 10;
+    xp += messages.size() * 2;
+    xp += memoryVault.size() * 25;
+    xp += streakCount * 5;
+    xp;
+  };
+
+  // Time Capsule
   public shared ({ caller }) func addTimeCapsuleMessage(content : Text, authorName : Text, unlockAt : Int) : async () {
     let message : TimeCapsuleMessage = {
       id = nextTimeCapsuleId;
@@ -348,12 +501,7 @@ actor {
   public query ({ caller }) func getUnlockedTimeCapsuleMessages() : async [TimeCapsuleMessage] {
     let now = Time.now();
     let items = timeCapsules.values().toArray();
-    let unlocked = items.filter(
-      func(msg) {
-        msg.unlockAt <= now;
-      }
-    );
-    unlocked;
+    items.filter(func(msg) { msg.unlockAt <= now });
   };
 
   type TimeCapsuleWithLockState = {
@@ -367,8 +515,7 @@ actor {
 
   public query ({ caller }) func getAllTimeCapsuleMessages() : async [TimeCapsuleWithLockState] {
     let now = Time.now();
-    let items = timeCapsules.values().toArray();
-    let mapped = items.map(
+    timeCapsules.values().toArray().map(
       func(msg) {
         {
           id = msg.id;
@@ -380,10 +527,9 @@ actor {
         };
       }
     );
-    mapped;
   };
 
-  // 4. Custom Anniversaries
+  // Anniversaries
   public shared ({ caller }) func addAnniversary(title : Text, date : Int, emoji : Text) : async () {
     let anniversary : Anniversary = {
       id = nextAnniversaryId;
@@ -403,7 +549,7 @@ actor {
     anniversaries.remove(id);
   };
 
-  // 5. Couple Quiz
+  // Quiz
   public shared ({ caller }) func submitQuizAnswer(questionId : Nat, partnerName : Text, answer : Text) : async () {
     let quizAnswer : QuizAnswer = {
       questionId;
@@ -419,7 +565,182 @@ actor {
   };
 
   public query ({ caller }) func getCompatibilityScore() : async Nat {
-    var score = 100; // Start at 100%
-    score;
+    100;
+  };
+
+  // Chat delete
+  public shared ({ caller }) func deleteMessage(id : Nat) : async Bool {
+    let existed = messages.containsKey(id);
+    messages.remove(id);
+    existed;
+  };
+
+  // Love Letters
+  public shared ({ caller }) func addLoveLetter(title : Text, authorName : Text, content : Text) : async () {
+    let letter : LoveLetter = {
+      id = nextLoveLetterId;
+      title;
+      content;
+      authorName;
+      createdAt = Time.now();
+    };
+    loveLetters.add(nextLoveLetterId, letter);
+    nextLoveLetterId += 1;
+  };
+
+  public query ({ caller }) func getAllLoveLetters() : async [LoveLetter] {
+    loveLetters.values().toArray();
+  };
+
+  public shared ({ caller }) func deleteLoveLetter(id : Nat) : async Bool {
+    let existed = loveLetters.containsKey(id);
+    loveLetters.remove(id);
+    existed;
+  };
+
+  // Photo of the Day
+  public shared ({ caller }) func addPhotoOfDay(caption : Text, photo : Storage.ExternalBlob, date : Int) : async () {
+    let entry : PhotoOfDay = {
+      id = nextPhotoOfDayId;
+      caption;
+      photo;
+      date;
+      createdAt = Time.now();
+    };
+    photosOfDay.add(nextPhotoOfDayId, entry);
+    nextPhotoOfDayId += 1;
+  };
+
+  public query ({ caller }) func getAllPhotosOfDay() : async [PhotoOfDay] {
+    photosOfDay.values().toArray();
+  };
+
+  public shared ({ caller }) func deletePhotoOfDay(id : Nat) : async Bool {
+    let existed = photosOfDay.containsKey(id);
+    photosOfDay.remove(id);
+    existed;
+  };
+
+  public query ({ caller }) func getTodaysPhoto() : async ?PhotoOfDay {
+    let todayDay = Time.now() / (24 * 60 * 60 * 1000000000);
+    for (photo in photosOfDay.values()) {
+      let photoDay = photo.date / (24 * 60 * 60 * 1000000000);
+      if (photoDay == todayDay) {
+        return ?photo;
+      };
+    };
+    null;
+  };
+
+  // Couple Challenges
+  public shared ({ caller }) func initWeeklyChallenges() : async () {
+    initChallenges();
+  };
+
+  public query ({ caller }) func getCurrentWeekChallenges() : async [CoupleChallenge] {
+    challenges.values().toArray();
+  };
+
+  public shared ({ caller }) func incrementChallengeProgress(id : Nat) : async () {
+    switch (challenges.get(id)) {
+      case (null) { Runtime.trap("Challenge not found") };
+      case (?c) {
+        if (c.isCompleted) { return };
+        let newCount = c.currentCount + 1;
+        let updated : CoupleChallenge = {
+          id = c.id;
+          title = c.title;
+          description = c.description;
+          targetCount = c.targetCount;
+          currentCount = newCount;
+          weekStartTimestamp = c.weekStartTimestamp;
+          isCompleted = newCount >= c.targetCount;
+        };
+        challenges.add(id, updated);
+      };
+    };
+  };
+
+  public shared ({ caller }) func resetWeeklyChallenges() : async () {
+    let weekStart = (Time.now() / (7 * 24 * 60 * 60 * 1000000000)) * (7 * 24 * 60 * 60 * 1000000000);
+    for ((id, c) in challenges.entries()) {
+      let reset : CoupleChallenge = {
+        id = c.id;
+        title = c.title;
+        description = c.description;
+        targetCount = c.targetCount;
+        currentCount = 0;
+        weekStartTimestamp = weekStart;
+        isCompleted = false;
+      };
+      challenges.add(id, reset);
+    };
+  };
+
+  // 2. New Features
+
+  public query ({ caller }) func getRelationshipLevel() : async Nat {
+    relationshipLevel;
+  };
+
+  public shared ({ caller }) func updateRelationshipLevel(newLevel : Nat) : async () {
+    relationshipLevel := newLevel;
+  };
+
+  public query ({ caller }) func getCoachTipSeed() : async Nat {
+    coachTipSeed;
+  };
+
+  public shared ({ caller }) func setCoachTipSeed(seed : Nat) : async () {
+    coachTipSeed := seed;
+  };
+
+  public query ({ caller }) func getConversationStarterSeed() : async Nat {
+    conversationStarterSeed;
+  };
+
+  public shared ({ caller }) func setConversationStarterSeed(seed : Nat) : async () {
+    conversationStarterSeed := seed;
+  };
+
+  // Mood Prediction
+  public query ({ caller }) func getMoodPrediction() : async Bool {
+    if (checkIns.isEmpty()) {
+      return false;
+    };
+
+    let currentTime = Time.now();
+    let sevenDaysInTicks : Int = 7 * 24 * 60 * 60 * 1000000000;
+
+    // Find checks from the last 7 days (up to 5 latest)
+    let recentChecks = checkIns.values().toArray().reverse().filter(
+      func(check) {
+        currentTime - check.timestamp <= sevenDaysInTicks;
+      }
+    );
+
+    let limitedChecks = recentChecks.sliceToArray(
+      0,
+      if (recentChecks.size() > 5) { 5 } else { recentChecks.size() },
+    );
+
+    let negativeMoods = ["sad", "tired", "stressed"];
+    var negativeCount = 0;
+
+    for (check in limitedChecks.values()) {
+      if (negativeMoods.any(func(emotion) { check.emotion == emotion })) {
+        negativeCount += 1;
+      };
+    };
+
+    negativeCount >= 3;
+  };
+
+  public query ({ caller }) func getSeasonalThemeEnabled() : async Bool {
+    seasonalThemeEnabled;
+  };
+
+  public shared ({ caller }) func setSeasonalThemeEnabled(enabled : Bool) : async () {
+    seasonalThemeEnabled := enabled;
   };
 };

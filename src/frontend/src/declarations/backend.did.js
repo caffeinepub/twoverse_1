@@ -31,6 +31,13 @@ export const CheckIn = IDL.Record({
   'note' : IDL.Opt(IDL.Text),
   'timestamp' : IDL.Int,
 });
+export const LoveLetter = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'content' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'authorName' : IDL.Text,
+});
 export const MemoryVaultEntry = IDL.Record({
   'id' : IDL.Nat,
   'title' : IDL.Text,
@@ -57,6 +64,13 @@ export const CoupleMission = IDL.Record({
   'xpReward' : IDL.Nat,
   'description' : IDL.Text,
 });
+export const PhotoOfDay = IDL.Record({
+  'id' : IDL.Nat,
+  'date' : IDL.Int,
+  'createdAt' : IDL.Int,
+  'caption' : IDL.Text,
+  'photo' : ExternalBlob,
+});
 export const TimeCapsuleWithLockState = IDL.Record({
   'id' : IDL.Nat,
   'content' : IDL.Text,
@@ -64,6 +78,15 @@ export const TimeCapsuleWithLockState = IDL.Record({
   'authorName' : IDL.Text,
   'unlockAt' : IDL.Int,
   'isUnlocked' : IDL.Bool,
+});
+export const CoupleChallenge = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'isCompleted' : IDL.Bool,
+  'description' : IDL.Text,
+  'weekStartTimestamp' : IDL.Int,
+  'currentCount' : IDL.Nat,
+  'targetCount' : IDL.Nat,
 });
 export const QuizAnswer = IDL.Record({
   'partnerName' : IDL.Text,
@@ -108,26 +131,47 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   'addAnniversary' : IDL.Func([IDL.Text, IDL.Int, IDL.Text], [], []),
   'addCheckIn' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [], []),
+  'addLoveLetter' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'addMemory' : IDL.Func([IDL.Text, IDL.Text, IDL.Opt(ExternalBlob)], [], []),
   'addMission' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [], []),
+  'addPhotoOfDay' : IDL.Func([IDL.Text, ExternalBlob, IDL.Int], [], []),
   'addReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'addTimeCapsuleMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Int], [], []),
   'completeMission' : IDL.Func([IDL.Nat], [], []),
+  'deleteLoveLetter' : IDL.Func([IDL.Nat], [IDL.Bool], []),
   'deleteMemory' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'deleteMessage' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'deletePhotoOfDay' : IDL.Func([IDL.Nat], [IDL.Bool], []),
   'getAllAnniversaries' : IDL.Func([], [IDL.Vec(Anniversary)], ['query']),
   'getAllCheckIns' : IDL.Func([], [IDL.Vec(CheckIn)], ['query']),
+  'getAllLoveLetters' : IDL.Func([], [IDL.Vec(LoveLetter)], ['query']),
   'getAllMemories' : IDL.Func([], [IDL.Vec(MemoryVaultEntry)], ['query']),
   'getAllMessages' : IDL.Func([], [IDL.Vec(ChatMessage)], ['query']),
   'getAllMissions' : IDL.Func([], [IDL.Vec(CoupleMission)], ['query']),
+  'getAllPhotosOfDay' : IDL.Func([], [IDL.Vec(PhotoOfDay)], ['query']),
   'getAllTimeCapsuleMessages' : IDL.Func(
       [],
       [IDL.Vec(TimeCapsuleWithLockState)],
       ['query'],
     ),
+  'getCoachTipSeed' : IDL.Func([], [IDL.Nat], ['query']),
   'getCompatibilityScore' : IDL.Func([], [IDL.Nat], ['query']),
+  'getConversationStarterSeed' : IDL.Func([], [IDL.Nat], ['query']),
+  'getCurrentWeekChallenges' : IDL.Func(
+      [],
+      [IDL.Vec(CoupleChallenge)],
+      ['query'],
+    ),
   'getDaysTogether' : IDL.Func([], [IDL.Opt(IDL.Int)], ['query']),
+  'getMoodPrediction' : IDL.Func([], [IDL.Bool], ['query']),
   'getQuizAnswers' : IDL.Func([], [IDL.Vec(QuizAnswer)], ['query']),
+  'getRelationshipLevel' : IDL.Func([], [IDL.Nat], ['query']),
+  'getRelationshipXP' : IDL.Func([], [IDL.Nat], ['query']),
+  'getSeasonalThemeEnabled' : IDL.Func([], [IDL.Bool], ['query']),
+  'getSharedGoal' : IDL.Func([], [IDL.Text], ['query']),
   'getStartDate' : IDL.Func([], [IDL.Opt(IDL.Int)], ['query']),
+  'getStreakCount' : IDL.Func([], [IDL.Nat], ['query']),
+  'getTodaysPhoto' : IDL.Func([], [IDL.Opt(PhotoOfDay)], ['query']),
   'getTodaysPrompt' : IDL.Func([], [IDL.Text], ['query']),
   'getTotalXP' : IDL.Func([], [IDL.Nat], ['query']),
   'getUnlockedTimeCapsuleMessages' : IDL.Func(
@@ -135,11 +179,19 @@ export const idlService = IDL.Service({
       [IDL.Vec(TimeCapsuleMessage)],
       ['query'],
     ),
+  'incrementChallengeProgress' : IDL.Func([IDL.Nat], [], []),
+  'initWeeklyChallenges' : IDL.Func([], [], []),
   'removeAnniversary' : IDL.Func([IDL.Nat], [], []),
   'removeReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+  'resetWeeklyChallenges' : IDL.Func([], [], []),
   'sendMessage' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'setCoachTipSeed' : IDL.Func([IDL.Nat], [], []),
+  'setConversationStarterSeed' : IDL.Func([IDL.Nat], [], []),
+  'setSeasonalThemeEnabled' : IDL.Func([IDL.Bool], [], []),
+  'setSharedGoal' : IDL.Func([IDL.Text], [], []),
   'setStartDate' : IDL.Func([IDL.Int], [], []),
   'submitQuizAnswer' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [], []),
+  'updateRelationshipLevel' : IDL.Func([IDL.Nat], [], []),
 });
 
 export const idlInitArgs = [];
@@ -168,6 +220,13 @@ export const idlFactory = ({ IDL }) => {
     'note' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Int,
   });
+  const LoveLetter = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'content' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'authorName' : IDL.Text,
+  });
   const MemoryVaultEntry = IDL.Record({
     'id' : IDL.Nat,
     'title' : IDL.Text,
@@ -191,6 +250,13 @@ export const idlFactory = ({ IDL }) => {
     'xpReward' : IDL.Nat,
     'description' : IDL.Text,
   });
+  const PhotoOfDay = IDL.Record({
+    'id' : IDL.Nat,
+    'date' : IDL.Int,
+    'createdAt' : IDL.Int,
+    'caption' : IDL.Text,
+    'photo' : ExternalBlob,
+  });
   const TimeCapsuleWithLockState = IDL.Record({
     'id' : IDL.Nat,
     'content' : IDL.Text,
@@ -198,6 +264,15 @@ export const idlFactory = ({ IDL }) => {
     'authorName' : IDL.Text,
     'unlockAt' : IDL.Int,
     'isUnlocked' : IDL.Bool,
+  });
+  const CoupleChallenge = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'isCompleted' : IDL.Bool,
+    'description' : IDL.Text,
+    'weekStartTimestamp' : IDL.Int,
+    'currentCount' : IDL.Nat,
+    'targetCount' : IDL.Nat,
   });
   const QuizAnswer = IDL.Record({
     'partnerName' : IDL.Text,
@@ -242,26 +317,47 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     'addAnniversary' : IDL.Func([IDL.Text, IDL.Int, IDL.Text], [], []),
     'addCheckIn' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [], []),
+    'addLoveLetter' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'addMemory' : IDL.Func([IDL.Text, IDL.Text, IDL.Opt(ExternalBlob)], [], []),
     'addMission' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [], []),
+    'addPhotoOfDay' : IDL.Func([IDL.Text, ExternalBlob, IDL.Int], [], []),
     'addReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'addTimeCapsuleMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Int], [], []),
     'completeMission' : IDL.Func([IDL.Nat], [], []),
+    'deleteLoveLetter' : IDL.Func([IDL.Nat], [IDL.Bool], []),
     'deleteMemory' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'deleteMessage' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'deletePhotoOfDay' : IDL.Func([IDL.Nat], [IDL.Bool], []),
     'getAllAnniversaries' : IDL.Func([], [IDL.Vec(Anniversary)], ['query']),
     'getAllCheckIns' : IDL.Func([], [IDL.Vec(CheckIn)], ['query']),
+    'getAllLoveLetters' : IDL.Func([], [IDL.Vec(LoveLetter)], ['query']),
     'getAllMemories' : IDL.Func([], [IDL.Vec(MemoryVaultEntry)], ['query']),
     'getAllMessages' : IDL.Func([], [IDL.Vec(ChatMessage)], ['query']),
     'getAllMissions' : IDL.Func([], [IDL.Vec(CoupleMission)], ['query']),
+    'getAllPhotosOfDay' : IDL.Func([], [IDL.Vec(PhotoOfDay)], ['query']),
     'getAllTimeCapsuleMessages' : IDL.Func(
         [],
         [IDL.Vec(TimeCapsuleWithLockState)],
         ['query'],
       ),
+    'getCoachTipSeed' : IDL.Func([], [IDL.Nat], ['query']),
     'getCompatibilityScore' : IDL.Func([], [IDL.Nat], ['query']),
+    'getConversationStarterSeed' : IDL.Func([], [IDL.Nat], ['query']),
+    'getCurrentWeekChallenges' : IDL.Func(
+        [],
+        [IDL.Vec(CoupleChallenge)],
+        ['query'],
+      ),
     'getDaysTogether' : IDL.Func([], [IDL.Opt(IDL.Int)], ['query']),
+    'getMoodPrediction' : IDL.Func([], [IDL.Bool], ['query']),
     'getQuizAnswers' : IDL.Func([], [IDL.Vec(QuizAnswer)], ['query']),
+    'getRelationshipLevel' : IDL.Func([], [IDL.Nat], ['query']),
+    'getRelationshipXP' : IDL.Func([], [IDL.Nat], ['query']),
+    'getSeasonalThemeEnabled' : IDL.Func([], [IDL.Bool], ['query']),
+    'getSharedGoal' : IDL.Func([], [IDL.Text], ['query']),
     'getStartDate' : IDL.Func([], [IDL.Opt(IDL.Int)], ['query']),
+    'getStreakCount' : IDL.Func([], [IDL.Nat], ['query']),
+    'getTodaysPhoto' : IDL.Func([], [IDL.Opt(PhotoOfDay)], ['query']),
     'getTodaysPrompt' : IDL.Func([], [IDL.Text], ['query']),
     'getTotalXP' : IDL.Func([], [IDL.Nat], ['query']),
     'getUnlockedTimeCapsuleMessages' : IDL.Func(
@@ -269,11 +365,19 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(TimeCapsuleMessage)],
         ['query'],
       ),
+    'incrementChallengeProgress' : IDL.Func([IDL.Nat], [], []),
+    'initWeeklyChallenges' : IDL.Func([], [], []),
     'removeAnniversary' : IDL.Func([IDL.Nat], [], []),
     'removeReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+    'resetWeeklyChallenges' : IDL.Func([], [], []),
     'sendMessage' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'setCoachTipSeed' : IDL.Func([IDL.Nat], [], []),
+    'setConversationStarterSeed' : IDL.Func([IDL.Nat], [], []),
+    'setSeasonalThemeEnabled' : IDL.Func([IDL.Bool], [], []),
+    'setSharedGoal' : IDL.Func([IDL.Text], [], []),
     'setStartDate' : IDL.Func([IDL.Int], [], []),
     'submitQuizAnswer' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [], []),
+    'updateRelationshipLevel' : IDL.Func([IDL.Nat], [], []),
   });
 };
 

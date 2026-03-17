@@ -28,6 +28,15 @@ export interface CheckIn {
   'note' : [] | [string],
   'timestamp' : bigint,
 }
+export interface CoupleChallenge {
+  'id' : bigint,
+  'title' : string,
+  'isCompleted' : boolean,
+  'description' : string,
+  'weekStartTimestamp' : bigint,
+  'currentCount' : bigint,
+  'targetCount' : bigint,
+}
 export interface CoupleMission {
   'id' : bigint,
   'completedAt' : bigint,
@@ -38,12 +47,26 @@ export interface CoupleMission {
 }
 export interface EmojiReaction { 'count' : bigint, 'emoji' : string }
 export type ExternalBlob = Uint8Array;
+export interface LoveLetter {
+  'id' : bigint,
+  'title' : string,
+  'content' : string,
+  'createdAt' : bigint,
+  'authorName' : string,
+}
 export interface MemoryVaultEntry {
   'id' : bigint,
   'title' : string,
   'content' : string,
   'timestamp' : bigint,
   'photo' : [] | [ExternalBlob],
+}
+export interface PhotoOfDay {
+  'id' : bigint,
+  'date' : bigint,
+  'createdAt' : bigint,
+  'caption' : string,
+  'photo' : ExternalBlob,
 }
 export interface QuizAnswer {
   'partnerName' : string,
@@ -95,33 +118,58 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   'addAnniversary' : ActorMethod<[string, bigint, string], undefined>,
   'addCheckIn' : ActorMethod<[string, [] | [string]], undefined>,
+  'addLoveLetter' : ActorMethod<[string, string, string], undefined>,
   'addMemory' : ActorMethod<[string, string, [] | [ExternalBlob]], undefined>,
   'addMission' : ActorMethod<[string, string, bigint], undefined>,
+  'addPhotoOfDay' : ActorMethod<[string, ExternalBlob, bigint], undefined>,
   'addReaction' : ActorMethod<[bigint, string], undefined>,
   'addTimeCapsuleMessage' : ActorMethod<[string, string, bigint], undefined>,
   'completeMission' : ActorMethod<[bigint], undefined>,
+  'deleteLoveLetter' : ActorMethod<[bigint], boolean>,
   'deleteMemory' : ActorMethod<[bigint], boolean>,
+  'deleteMessage' : ActorMethod<[bigint], boolean>,
+  'deletePhotoOfDay' : ActorMethod<[bigint], boolean>,
   'getAllAnniversaries' : ActorMethod<[], Array<Anniversary>>,
   'getAllCheckIns' : ActorMethod<[], Array<CheckIn>>,
+  'getAllLoveLetters' : ActorMethod<[], Array<LoveLetter>>,
   'getAllMemories' : ActorMethod<[], Array<MemoryVaultEntry>>,
   'getAllMessages' : ActorMethod<[], Array<ChatMessage>>,
   'getAllMissions' : ActorMethod<[], Array<CoupleMission>>,
+  'getAllPhotosOfDay' : ActorMethod<[], Array<PhotoOfDay>>,
   'getAllTimeCapsuleMessages' : ActorMethod<
     [],
     Array<TimeCapsuleWithLockState>
   >,
+  'getCoachTipSeed' : ActorMethod<[], bigint>,
   'getCompatibilityScore' : ActorMethod<[], bigint>,
+  'getConversationStarterSeed' : ActorMethod<[], bigint>,
+  'getCurrentWeekChallenges' : ActorMethod<[], Array<CoupleChallenge>>,
   'getDaysTogether' : ActorMethod<[], [] | [bigint]>,
+  'getMoodPrediction' : ActorMethod<[], boolean>,
   'getQuizAnswers' : ActorMethod<[], Array<QuizAnswer>>,
+  'getRelationshipLevel' : ActorMethod<[], bigint>,
+  'getRelationshipXP' : ActorMethod<[], bigint>,
+  'getSeasonalThemeEnabled' : ActorMethod<[], boolean>,
+  'getSharedGoal' : ActorMethod<[], string>,
   'getStartDate' : ActorMethod<[], [] | [bigint]>,
+  'getStreakCount' : ActorMethod<[], bigint>,
+  'getTodaysPhoto' : ActorMethod<[], [] | [PhotoOfDay]>,
   'getTodaysPrompt' : ActorMethod<[], string>,
   'getTotalXP' : ActorMethod<[], bigint>,
   'getUnlockedTimeCapsuleMessages' : ActorMethod<[], Array<TimeCapsuleMessage>>,
+  'incrementChallengeProgress' : ActorMethod<[bigint], undefined>,
+  'initWeeklyChallenges' : ActorMethod<[], undefined>,
   'removeAnniversary' : ActorMethod<[bigint], undefined>,
   'removeReaction' : ActorMethod<[bigint, string], undefined>,
+  'resetWeeklyChallenges' : ActorMethod<[], undefined>,
   'sendMessage' : ActorMethod<[string, string], undefined>,
+  'setCoachTipSeed' : ActorMethod<[bigint], undefined>,
+  'setConversationStarterSeed' : ActorMethod<[bigint], undefined>,
+  'setSeasonalThemeEnabled' : ActorMethod<[boolean], undefined>,
+  'setSharedGoal' : ActorMethod<[string], undefined>,
   'setStartDate' : ActorMethod<[bigint], undefined>,
   'submitQuizAnswer' : ActorMethod<[bigint, string, string], undefined>,
+  'updateRelationshipLevel' : ActorMethod<[bigint], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

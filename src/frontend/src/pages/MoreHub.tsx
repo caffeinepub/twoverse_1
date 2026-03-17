@@ -1,17 +1,6 @@
 import type { Variants } from "motion/react";
 import { motion } from "motion/react";
-
-type Page =
-  | "dashboard"
-  | "chat"
-  | "memories"
-  | "settings"
-  | "more"
-  | "analytics"
-  | "missions"
-  | "timecapsule"
-  | "anniversaries"
-  | "quiz";
+import type { Page } from "../App";
 
 interface MoreHubProps {
   onNavigate: (page: Page) => void;
@@ -58,6 +47,41 @@ const features: {
     name: "Couple Quiz",
     description: "Discover compatibility",
     ocid: "more.quiz_card",
+  },
+  {
+    page: "loveletters",
+    emoji: "✉️",
+    name: "Love Letters 💌",
+    description: "Write heartfelt letters",
+    ocid: "more.loveletters_card",
+  },
+  {
+    page: "photoofday",
+    emoji: "📸",
+    name: "Photo of the Day",
+    description: "Daily photo memories",
+    ocid: "more.photoofday_card",
+  },
+  {
+    page: "challenges",
+    emoji: "🏆",
+    name: "Couple Challenges",
+    description: "Weekly goals together",
+    ocid: "more.challenges_card",
+  },
+  {
+    page: "aicoach",
+    emoji: "🤖",
+    name: "AI Coach",
+    description: "Daily relationship tips",
+    ocid: "more.aicoach_card",
+  },
+  {
+    page: "starters",
+    emoji: "💬",
+    name: "Conversation Starters",
+    description: "Deep questions for two",
+    ocid: "more.starters_card",
   },
   {
     page: "settings",

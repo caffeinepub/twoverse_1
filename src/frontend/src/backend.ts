@@ -97,6 +97,19 @@ export interface TimeCapsuleWithLockState {
     unlockAt: bigint;
     isUnlocked: boolean;
 }
+export interface PhotoOfDay {
+    id: bigint;
+    date: bigint;
+    createdAt: bigint;
+    caption: string;
+    photo: ExternalBlob;
+}
+export interface QuizAnswer {
+    partnerName: string;
+    answer: string;
+    timestamp: bigint;
+    questionId: bigint;
+}
 export interface CoupleMission {
     id: bigint;
     completedAt: bigint;
@@ -105,32 +118,15 @@ export interface CoupleMission {
     xpReward: bigint;
     description: string;
 }
-export interface QuizAnswer {
-    partnerName: string;
-    answer: string;
-    timestamp: bigint;
-    questionId: bigint;
-}
-export interface CheckIn {
-    emotion: string;
-    note?: string;
-    timestamp: bigint;
-}
-export interface Anniversary {
+export interface LoveLetter {
     id: bigint;
     title: string;
-    date: bigint;
-    emoji: string;
+    content: string;
+    createdAt: bigint;
+    authorName: string;
 }
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
-}
-export interface ChatMessage {
-    id: bigint;
-    content: string;
-    timestamp: bigint;
-    senderName: string;
-    reactions: Array<EmojiReaction>;
 }
 export interface TimeCapsuleMessage {
     id: bigint;
@@ -154,6 +150,33 @@ export interface MemoryVaultEntry {
     timestamp: bigint;
     photo?: ExternalBlob;
 }
+export interface CoupleChallenge {
+    id: bigint;
+    title: string;
+    isCompleted: boolean;
+    description: string;
+    weekStartTimestamp: bigint;
+    currentCount: bigint;
+    targetCount: bigint;
+}
+export interface CheckIn {
+    emotion: string;
+    note?: string;
+    timestamp: bigint;
+}
+export interface Anniversary {
+    id: bigint;
+    title: string;
+    date: bigint;
+    emoji: string;
+}
+export interface ChatMessage {
+    id: bigint;
+    content: string;
+    timestamp: bigint;
+    senderName: string;
+    reactions: Array<EmojiReaction>;
+}
 export interface _CaffeineStorageRefillResult {
     success?: boolean;
     topped_up_amount?: bigint;
@@ -167,32 +190,57 @@ export interface backendInterface {
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     addAnniversary(title: string, date: bigint, emoji: string): Promise<void>;
     addCheckIn(emotion: string, note: string | null): Promise<void>;
+    addLoveLetter(title: string, authorName: string, content: string): Promise<void>;
     addMemory(title: string, content: string, photo: ExternalBlob | null): Promise<void>;
     addMission(title: string, description: string, xpReward: bigint): Promise<void>;
+    addPhotoOfDay(caption: string, photo: ExternalBlob, date: bigint): Promise<void>;
     addReaction(messageId: bigint, emoji: string): Promise<void>;
     addTimeCapsuleMessage(content: string, authorName: string, unlockAt: bigint): Promise<void>;
     completeMission(missionId: bigint): Promise<void>;
+    deleteLoveLetter(id: bigint): Promise<boolean>;
     deleteMemory(memoryId: bigint): Promise<boolean>;
+    deleteMessage(id: bigint): Promise<boolean>;
+    deletePhotoOfDay(id: bigint): Promise<boolean>;
     getAllAnniversaries(): Promise<Array<Anniversary>>;
     getAllCheckIns(): Promise<Array<CheckIn>>;
+    getAllLoveLetters(): Promise<Array<LoveLetter>>;
     getAllMemories(): Promise<Array<MemoryVaultEntry>>;
     getAllMessages(): Promise<Array<ChatMessage>>;
     getAllMissions(): Promise<Array<CoupleMission>>;
+    getAllPhotosOfDay(): Promise<Array<PhotoOfDay>>;
     getAllTimeCapsuleMessages(): Promise<Array<TimeCapsuleWithLockState>>;
+    getCoachTipSeed(): Promise<bigint>;
     getCompatibilityScore(): Promise<bigint>;
+    getConversationStarterSeed(): Promise<bigint>;
+    getCurrentWeekChallenges(): Promise<Array<CoupleChallenge>>;
     getDaysTogether(): Promise<bigint | null>;
+    getMoodPrediction(): Promise<boolean>;
     getQuizAnswers(): Promise<Array<QuizAnswer>>;
+    getRelationshipLevel(): Promise<bigint>;
+    getRelationshipXP(): Promise<bigint>;
+    getSeasonalThemeEnabled(): Promise<boolean>;
+    getSharedGoal(): Promise<string>;
     getStartDate(): Promise<bigint | null>;
+    getStreakCount(): Promise<bigint>;
+    getTodaysPhoto(): Promise<PhotoOfDay | null>;
     getTodaysPrompt(): Promise<string>;
     getTotalXP(): Promise<bigint>;
     getUnlockedTimeCapsuleMessages(): Promise<Array<TimeCapsuleMessage>>;
+    incrementChallengeProgress(id: bigint): Promise<void>;
+    initWeeklyChallenges(): Promise<void>;
     removeAnniversary(id: bigint): Promise<void>;
     removeReaction(messageId: bigint, emoji: string): Promise<void>;
+    resetWeeklyChallenges(): Promise<void>;
     sendMessage(senderName: string, content: string): Promise<void>;
+    setCoachTipSeed(seed: bigint): Promise<void>;
+    setConversationStarterSeed(seed: bigint): Promise<void>;
+    setSeasonalThemeEnabled(enabled: boolean): Promise<void>;
+    setSharedGoal(goal: string): Promise<void>;
     setStartDate(timestamp: bigint): Promise<void>;
     submitQuizAnswer(questionId: bigint, partnerName: string, answer: string): Promise<void>;
+    updateRelationshipLevel(newLevel: bigint): Promise<void>;
 }
-import type { CheckIn as _CheckIn, ExternalBlob as _ExternalBlob, MemoryVaultEntry as _MemoryVaultEntry, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { CheckIn as _CheckIn, ExternalBlob as _ExternalBlob, MemoryVaultEntry as _MemoryVaultEntry, PhotoOfDay as _PhotoOfDay, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -307,6 +355,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async addLoveLetter(arg0: string, arg1: string, arg2: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addLoveLetter(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addLoveLetter(arg0, arg1, arg2);
+            return result;
+        }
+    }
     async addMemory(arg0: string, arg1: string, arg2: ExternalBlob | null): Promise<void> {
         if (this.processError) {
             try {
@@ -332,6 +394,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.addMission(arg0, arg1, arg2);
+            return result;
+        }
+    }
+    async addPhotoOfDay(arg0: string, arg1: ExternalBlob, arg2: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addPhotoOfDay(arg0, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg1), arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addPhotoOfDay(arg0, await to_candid_ExternalBlob_n10(this._uploadFile, this._downloadFile, arg1), arg2);
             return result;
         }
     }
@@ -377,6 +453,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async deleteLoveLetter(arg0: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteLoveLetter(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteLoveLetter(arg0);
+            return result;
+        }
+    }
     async deleteMemory(arg0: bigint): Promise<boolean> {
         if (this.processError) {
             try {
@@ -388,6 +478,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.deleteMemory(arg0);
+            return result;
+        }
+    }
+    async deleteMessage(arg0: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteMessage(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteMessage(arg0);
+            return result;
+        }
+    }
+    async deletePhotoOfDay(arg0: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deletePhotoOfDay(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deletePhotoOfDay(arg0);
             return result;
         }
     }
@@ -417,6 +535,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getAllCheckIns();
             return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getAllLoveLetters(): Promise<Array<LoveLetter>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllLoveLetters();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllLoveLetters();
+            return result;
         }
     }
     async getAllMemories(): Promise<Array<MemoryVaultEntry>> {
@@ -461,6 +593,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getAllPhotosOfDay(): Promise<Array<PhotoOfDay>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllPhotosOfDay();
+                return from_candid_vec_n20(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllPhotosOfDay();
+            return from_candid_vec_n20(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getAllTimeCapsuleMessages(): Promise<Array<TimeCapsuleWithLockState>> {
         if (this.processError) {
             try {
@@ -472,6 +618,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getAllTimeCapsuleMessages();
+            return result;
+        }
+    }
+    async getCoachTipSeed(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCoachTipSeed();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCoachTipSeed();
             return result;
         }
     }
@@ -489,18 +649,60 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getConversationStarterSeed(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getConversationStarterSeed();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getConversationStarterSeed();
+            return result;
+        }
+    }
+    async getCurrentWeekChallenges(): Promise<Array<CoupleChallenge>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCurrentWeekChallenges();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCurrentWeekChallenges();
+            return result;
+        }
+    }
     async getDaysTogether(): Promise<bigint | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getDaysTogether();
-                return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getDaysTogether();
-            return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getMoodPrediction(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMoodPrediction();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMoodPrediction();
+            return result;
         }
     }
     async getQuizAnswers(): Promise<Array<QuizAnswer>> {
@@ -517,18 +719,102 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getRelationshipLevel(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getRelationshipLevel();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getRelationshipLevel();
+            return result;
+        }
+    }
+    async getRelationshipXP(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getRelationshipXP();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getRelationshipXP();
+            return result;
+        }
+    }
+    async getSeasonalThemeEnabled(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSeasonalThemeEnabled();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSeasonalThemeEnabled();
+            return result;
+        }
+    }
+    async getSharedGoal(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSharedGoal();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSharedGoal();
+            return result;
+        }
+    }
     async getStartDate(): Promise<bigint | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getStartDate();
-                return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getStartDate();
-            return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getStreakCount(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getStreakCount();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getStreakCount();
+            return result;
+        }
+    }
+    async getTodaysPhoto(): Promise<PhotoOfDay | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTodaysPhoto();
+                return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTodaysPhoto();
+            return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTodaysPrompt(): Promise<string> {
@@ -573,6 +859,34 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async incrementChallengeProgress(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.incrementChallengeProgress(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.incrementChallengeProgress(arg0);
+            return result;
+        }
+    }
+    async initWeeklyChallenges(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.initWeeklyChallenges();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.initWeeklyChallenges();
+            return result;
+        }
+    }
     async removeAnniversary(arg0: bigint): Promise<void> {
         if (this.processError) {
             try {
@@ -601,6 +915,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async resetWeeklyChallenges(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.resetWeeklyChallenges();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.resetWeeklyChallenges();
+            return result;
+        }
+    }
     async sendMessage(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
@@ -612,6 +940,62 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.sendMessage(arg0, arg1);
+            return result;
+        }
+    }
+    async setCoachTipSeed(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setCoachTipSeed(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setCoachTipSeed(arg0);
+            return result;
+        }
+    }
+    async setConversationStarterSeed(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setConversationStarterSeed(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setConversationStarterSeed(arg0);
+            return result;
+        }
+    }
+    async setSeasonalThemeEnabled(arg0: boolean): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setSeasonalThemeEnabled(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setSeasonalThemeEnabled(arg0);
+            return result;
+        }
+    }
+    async setSharedGoal(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setSharedGoal(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setSharedGoal(arg0);
             return result;
         }
     }
@@ -643,6 +1027,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async updateRelationshipLevel(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateRelationshipLevel(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateRelationshipLevel(arg0);
+            return result;
+        }
+    }
 }
 function from_candid_CheckIn_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CheckIn): CheckIn {
     return from_candid_record_n13(_uploadFile, _downloadFile, value);
@@ -653,6 +1051,9 @@ async function from_candid_ExternalBlob_n19(_uploadFile: (file: ExternalBlob) =>
 async function from_candid_MemoryVaultEntry_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _MemoryVaultEntry): Promise<MemoryVaultEntry> {
     return await from_candid_record_n17(_uploadFile, _downloadFile, value);
 }
+async function from_candid_PhotoOfDay_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PhotoOfDay): Promise<PhotoOfDay> {
+    return await from_candid_record_n22(_uploadFile, _downloadFile, value);
+}
 function from_candid__CaffeineStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __CaffeineStorageRefillResult): _CaffeineStorageRefillResult {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
@@ -662,8 +1063,11 @@ function from_candid_opt_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 async function from_candid_opt_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ExternalBlob]): Promise<ExternalBlob | null> {
     return value.length === 0 ? null : await from_candid_ExternalBlob_n19(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_opt_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
+function from_candid_opt_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
     return value.length === 0 ? null : value[0];
+}
+async function from_candid_opt_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_PhotoOfDay]): Promise<PhotoOfDay | null> {
+    return value.length === 0 ? null : await from_candid_PhotoOfDay_n21(_uploadFile, _downloadFile, value[0]);
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
     return value.length === 0 ? null : value[0];
@@ -707,6 +1111,27 @@ async function from_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promi
         photo: record_opt_to_undefined(await from_candid_opt_n18(_uploadFile, _downloadFile, value.photo))
     };
 }
+async function from_candid_record_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: bigint;
+    date: bigint;
+    createdAt: bigint;
+    caption: string;
+    photo: _ExternalBlob;
+}): Promise<{
+    id: bigint;
+    date: bigint;
+    createdAt: bigint;
+    caption: string;
+    photo: ExternalBlob;
+}> {
+    return {
+        id: value.id,
+        date: value.date,
+        createdAt: value.createdAt,
+        caption: value.caption,
+        photo: await from_candid_ExternalBlob_n19(_uploadFile, _downloadFile, value.photo)
+    };
+}
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     success: [] | [boolean];
     topped_up_amount: [] | [bigint];
@@ -724,6 +1149,9 @@ function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 }
 async function from_candid_vec_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_MemoryVaultEntry>): Promise<Array<MemoryVaultEntry>> {
     return await Promise.all(value.map(async (x)=>await from_candid_MemoryVaultEntry_n16(_uploadFile, _downloadFile, x)));
+}
+async function from_candid_vec_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_PhotoOfDay>): Promise<Array<PhotoOfDay>> {
+    return await Promise.all(value.map(async (x)=>await from_candid_PhotoOfDay_n21(_uploadFile, _downloadFile, x)));
 }
 async function to_candid_ExternalBlob_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
     return await _uploadFile(value);

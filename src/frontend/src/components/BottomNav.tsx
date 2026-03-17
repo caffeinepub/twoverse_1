@@ -12,7 +12,12 @@ type Page =
   | "missions"
   | "timecapsule"
   | "anniversaries"
-  | "quiz";
+  | "quiz"
+  | "loveletters"
+  | "photoofday"
+  | "challenges"
+  | "aicoach"
+  | "starters";
 
 interface BottomNavProps {
   activePage: Page;
