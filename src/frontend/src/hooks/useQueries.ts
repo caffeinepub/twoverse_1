@@ -158,6 +158,18 @@ export function useAddMemory() {
   });
 }
 
+export function useDeleteMemory() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.deleteMemory(id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["memories"] }),
+  });
+}
+
 export function useSetStartDate() {
   const { actor } = useActor();
   const qc = useQueryClient();

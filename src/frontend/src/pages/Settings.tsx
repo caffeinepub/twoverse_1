@@ -32,12 +32,18 @@ export default function Settings() {
   const handleSaveDate = () => {
     if (!dateInput) return;
     setStartDate.mutate(dateInput, {
-      onSuccess: () => toast.success("Start date saved! \ud83d\udc95"),
+      onSuccess: () => toast.success("Start date saved! 💕"),
       onError: () => toast.error("Couldn't save start date"),
     });
   };
 
   const daysNum = days != null ? Number(days) : null;
+
+  const glassCard = {
+    background: "rgba(255,255,255,0.15)",
+    backdropFilter: "blur(12px)",
+    borderColor: "rgba(255,255,255,0.25)",
+  };
 
   return (
     <div className="relative z-10 px-5 pt-8 pb-6 space-y-6">
@@ -47,10 +53,16 @@ export default function Settings() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="font-display text-2xl font-bold text-foreground">
-          Settings \u2699\ufe0f
+        <h1
+          className="font-display text-2xl font-bold"
+          style={{ color: "rgba(255,255,255,0.97)" }}
+        >
+          Settings ⚙️
         </h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <p
+          className="text-xs mt-0.5"
+          style={{ color: "rgba(255,255,255,0.60)" }}
+        >
           Customize your TwoVerse experience
         </p>
       </motion.div>
@@ -61,12 +73,23 @@ export default function Settings() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.05 }}
-          className="bg-primary/10 rounded-3xl p-4 text-center border border-primary/20"
+          className="rounded-3xl p-4 text-center border"
+          style={{
+            background: "rgba(255,255,255,0.18)",
+            backdropFilter: "blur(12px)",
+            borderColor: "rgba(255,255,255,0.30)",
+          }}
         >
-          <p className="font-display text-3xl font-bold text-primary">
-            \ud83d\udc95 {daysNum}
+          <p
+            className="font-display text-3xl font-bold"
+            style={{ color: "rgba(255,255,255,0.97)" }}
+          >
+            💕 {daysNum}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p
+            className="text-xs mt-1"
+            style={{ color: "rgba(255,255,255,0.65)" }}
+          >
             {daysNum === 1 ? "day" : "days"} of your love story
           </p>
         </motion.div>
@@ -77,15 +100,19 @@ export default function Settings() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-5 border border-border"
+        className="rounded-3xl shadow-card p-5 border"
+        style={glassCard}
       >
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xl">\ud83d\udcc5</span>
+          <span className="text-xl">📅</span>
           <div>
-            <h2 className="font-semibold text-foreground text-sm">
+            <h2
+              className="font-semibold text-sm"
+              style={{ color: "rgba(255,255,255,0.95)" }}
+            >
               Start Date
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.60)" }}>
               When did your journey begin?
             </p>
           </div>
@@ -94,7 +121,8 @@ export default function Settings() {
           <div>
             <Label
               htmlFor="start-date"
-              className="text-xs text-muted-foreground"
+              className="text-xs"
+              style={{ color: "rgba(255,255,255,0.70)" }}
             >
               Date
             </Label>
@@ -105,6 +133,11 @@ export default function Settings() {
               value={dateInput}
               onChange={(e) => setDateInput(e.target.value)}
               className="mt-1 rounded-2xl"
+              style={{
+                background: "rgba(255,255,255,0.15)",
+                borderColor: "rgba(255,255,255,0.25)",
+                color: "rgba(255,255,255,0.95)",
+              }}
               max={new Date().toISOString().split("T")[0]}
             />
           </div>
@@ -126,7 +159,7 @@ export default function Settings() {
                 Saved!
               </>
             ) : (
-              "Save Start Date \ud83d\udc95"
+              "Save Start Date 💕"
             )}
           </button>
         </div>
@@ -137,13 +170,21 @@ export default function Settings() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-5 border border-border"
+        className="rounded-3xl shadow-card p-5 border"
+        style={glassCard}
       >
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xl">\ud83c\udfa8</span>
+          <span className="text-xl">🎨</span>
           <div>
-            <h2 className="font-semibold text-foreground text-sm">Theme</h2>
-            <p className="text-xs text-muted-foreground">Choose your vibe</p>
+            <h2
+              className="font-semibold text-sm"
+              style={{ color: "rgba(255,255,255,0.95)" }}
+            >
+              Theme
+            </h2>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.60)" }}>
+              Choose your vibe
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -158,11 +199,9 @@ export default function Settings() {
                 className="relative text-left rounded-2xl p-3 border-2 transition-all overflow-hidden"
                 style={{
                   borderColor: isSelected
-                    ? t.colors[0]
-                    : "oklch(var(--border))",
-                  background: t.isDark
-                    ? `linear-gradient(135deg, ${t.colors[2]}ee 0%, ${t.colors[2]}cc 100%)`
-                    : `linear-gradient(135deg, ${t.colors[2]}cc 0%, ${t.colors[2]}88 100%)`,
+                    ? "rgba(255,255,255,0.70)"
+                    : "rgba(255,255,255,0.20)",
+                  background: `linear-gradient(135deg, ${t.bgDeep}cc 0%, ${t.heartFill}55 100%)`,
                 }}
               >
                 {isSelected && (
@@ -171,13 +210,17 @@ export default function Settings() {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: "spring", bounce: 0.5, duration: 0.4 }}
                     className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center shadow-sm"
-                    style={{ background: t.colors[0] }}
+                    style={{ background: "rgba(255,255,255,0.90)" }}
                   >
-                    <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                    <Check
+                      className="w-3 h-3"
+                      style={{ color: t.heartFill }}
+                      strokeWidth={3}
+                    />
                   </motion.div>
                 )}
                 <div className="flex gap-1 mb-2.5">
-                  {t.colors.map((color) => (
+                  {[t.heartFill, t.heartHighlight, t.bgDeep].map((color) => (
                     <div
                       key={color}
                       className="w-5 h-5 rounded-full border-2 border-white/50 shadow-sm flex-shrink-0"
@@ -187,21 +230,13 @@ export default function Settings() {
                 </div>
                 <p
                   className="font-semibold text-xs leading-tight"
-                  style={{
-                    color: t.isDark
-                      ? "rgba(255,255,255,0.92)"
-                      : "rgba(30,20,30,0.85)",
-                  }}
+                  style={{ color: "rgba(255,255,255,0.95)" }}
                 >
                   {t.name}
                 </p>
                 <p
                   className="text-[10px] mt-0.5 leading-tight"
-                  style={{
-                    color: t.isDark
-                      ? "rgba(255,255,255,0.55)"
-                      : "rgba(30,20,30,0.5)",
-                  }}
+                  style={{ color: "rgba(255,255,255,0.65)" }}
                 >
                   {t.description}
                 </p>
@@ -216,15 +251,22 @@ export default function Settings() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-5 border border-border"
+        className="rounded-3xl shadow-card p-5 border"
+        style={glassCard}
       >
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-xl">\ud83d\udc9d</span>
-          <h2 className="font-semibold text-foreground text-sm">
+          <span className="text-xl">💝</span>
+          <h2
+            className="font-semibold text-sm"
+            style={{ color: "rgba(255,255,255,0.95)" }}
+          >
             About TwoVerse
           </h2>
         </div>
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p
+          className="text-xs leading-relaxed"
+          style={{ color: "rgba(255,255,255,0.70)" }}
+        >
           TwoVerse is your private world for two. A cozy space to celebrate
           every day together, share moments, and cherish memories.
         </p>
@@ -232,11 +274,12 @@ export default function Settings() {
 
       {/* Footer */}
       <div className="text-center pt-2">
-        <p className="text-xs text-muted-foreground">
-          \u00a9 {new Date().getFullYear()}. Built with love using{" "}
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.50)" }}>
+          © {new Date().getFullYear()}. Built with love using{" "}
           <a
             href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-            className="text-primary hover:underline"
+            className="hover:underline"
+            style={{ color: "rgba(255,255,255,0.75)" }}
             target="_blank"
             rel="noreferrer"
           >

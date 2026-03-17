@@ -8,37 +8,13 @@ import {
   useGetTodaysPrompt,
 } from "../hooks/useQueries";
 
-const EMOTIONS: { emoji: string; label: string; color: string }[] = [
-  {
-    emoji: "😊",
-    label: "Happy",
-    color: "bg-yellow-100 border-yellow-300 text-yellow-800",
-  },
-  {
-    emoji: "😌",
-    label: "Calm",
-    color: "bg-blue-100 border-blue-300 text-blue-800",
-  },
-  {
-    emoji: "😤",
-    label: "Stressed",
-    color: "bg-orange-100 border-orange-300 text-orange-800",
-  },
-  {
-    emoji: "😴",
-    label: "Tired",
-    color: "bg-slate-100 border-slate-300 text-slate-700",
-  },
-  {
-    emoji: "🤩",
-    label: "Excited",
-    color: "bg-pink-100 border-pink-300 text-pink-800",
-  },
-  {
-    emoji: "😢",
-    label: "Sad",
-    color: "bg-indigo-100 border-indigo-300 text-indigo-800",
-  },
+const EMOTIONS: { emoji: string; label: string }[] = [
+  { emoji: "😊", label: "Happy" },
+  { emoji: "😌", label: "Calm" },
+  { emoji: "😤", label: "Stressed" },
+  { emoji: "😴", label: "Tired" },
+  { emoji: "🤩", label: "Excited" },
+  { emoji: "😢", label: "Sad" },
 ];
 
 const isToday = (ts: bigint) => {
@@ -85,10 +61,16 @@ export default function Dashboard() {
         transition={{ duration: 0.5 }}
         className="text-center"
       >
-        <p className="text-sm text-muted-foreground font-medium tracking-widest uppercase mb-1">
+        <p
+          className="text-sm font-medium tracking-widest uppercase mb-1"
+          style={{ color: "rgba(255,255,255,0.75)" }}
+        >
           TwoVerse
         </p>
-        <h1 className="font-display text-3xl font-bold text-foreground leading-tight">
+        <h1
+          className="font-display text-3xl font-bold leading-tight"
+          style={{ color: "rgba(255,255,255,0.97)" }}
+        >
           Our little world 🌸
         </h1>
       </motion.div>
@@ -99,9 +81,17 @@ export default function Dashboard() {
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.5 }}
-        className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-6 text-center border border-border"
+        className="rounded-3xl shadow-card p-6 text-center border"
+        style={{
+          background: "rgba(255,255,255,0.15)",
+          backdropFilter: "blur(12px)",
+          borderColor: "rgba(255,255,255,0.25)",
+        }}
       >
-        <div className="text-5xl font-display font-bold text-primary mb-2">
+        <div
+          className="text-5xl font-display font-bold mb-2"
+          style={{ color: "rgba(255,255,255,0.97)" }}
+        >
           {daysNum !== null ? (
             <motion.span
               key={daysNum}
@@ -112,18 +102,27 @@ export default function Dashboard() {
               💕 {daysNum}
             </motion.span>
           ) : (
-            <span className="text-2xl text-muted-foreground">
+            <span
+              className="text-2xl"
+              style={{ color: "rgba(255,255,255,0.65)" }}
+            >
               Set your start date
             </span>
           )}
         </div>
         {daysNum !== null && (
-          <p className="text-muted-foreground text-sm font-medium">
+          <p
+            className="text-sm font-medium"
+            style={{ color: "rgba(255,255,255,0.70)" }}
+          >
             {daysNum === 1 ? "day together" : "days together"}
           </p>
         )}
         {daysNum === null && (
-          <p className="text-muted-foreground text-xs mt-1">
+          <p
+            className="text-xs mt-1"
+            style={{ color: "rgba(255,255,255,0.55)" }}
+          >
             Go to Settings to begin your journey
           </p>
         )}
@@ -135,15 +134,26 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="bg-primary/8 rounded-3xl p-5 border border-primary/20"
+        className="rounded-3xl p-5 border"
+        style={{
+          background: "rgba(255,255,255,0.12)",
+          backdropFilter: "blur(12px)",
+          borderColor: "rgba(255,255,255,0.20)",
+        }}
       >
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xl">✨</span>
-          <p className="text-xs font-semibold text-primary uppercase tracking-widest">
+          <p
+            className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: "rgba(255,255,255,0.80)" }}
+          >
             Today's Prompt
           </p>
         </div>
-        <p className="font-display text-lg font-semibold text-foreground leading-snug">
+        <p
+          className="font-display text-lg font-semibold leading-snug"
+          style={{ color: "rgba(255,255,255,0.95)" }}
+        >
           {prompt || "What's one thing you love most about today?"}
         </p>
       </motion.div>
@@ -153,23 +163,40 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-5 border border-border"
+        className="rounded-3xl shadow-card p-5 border"
+        style={{
+          background: "rgba(255,255,255,0.15)",
+          backdropFilter: "blur(12px)",
+          borderColor: "rgba(255,255,255,0.25)",
+        }}
       >
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xl">🫶</span>
           <div>
-            <h2 className="font-semibold text-foreground text-sm">
+            <h2
+              className="font-semibold text-sm"
+              style={{ color: "rgba(255,255,255,0.95)" }}
+            >
               How are you feeling?
             </h2>
             {todaysCheckIn ? (
-              <p className="text-xs text-muted-foreground">
+              <p
+                className="text-xs"
+                style={{ color: "rgba(255,255,255,0.65)" }}
+              >
                 Today:{" "}
-                <span className="text-primary font-medium capitalize">
+                <span
+                  className="font-medium capitalize"
+                  style={{ color: "rgba(255,255,255,0.90)" }}
+                >
                   {todaysCheckIn.emotion}
                 </span>
               </p>
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p
+                className="text-xs"
+                style={{ color: "rgba(255,255,255,0.60)" }}
+              >
                 Tap to check in for today
               </p>
             )}
@@ -186,14 +213,21 @@ export default function Dashboard() {
                 whileHover={{ scale: 1.04 }}
                 onClick={() => handleEmotion(e.label)}
                 disabled={addCheckIn.isPending}
-                className={`flex flex-col items-center gap-1 py-3 px-2 rounded-2xl border-2 transition-all ${
-                  isSelected
-                    ? "border-primary bg-primary/12 shadow-sm"
-                    : "border-border bg-card hover:border-primary/40"
-                }`}
+                className="flex flex-col items-center gap-1 py-3 px-2 rounded-2xl border-2 transition-all"
+                style={{
+                  borderColor: isSelected
+                    ? "rgba(255,255,255,0.70)"
+                    : "rgba(255,255,255,0.20)",
+                  background: isSelected
+                    ? "rgba(255,255,255,0.25)"
+                    : "rgba(255,255,255,0.08)",
+                }}
               >
                 <span className="text-2xl">{e.emoji}</span>
-                <span className="text-[11px] font-medium text-muted-foreground">
+                <span
+                  className="text-[11px] font-medium"
+                  style={{ color: "rgba(255,255,255,0.80)" }}
+                >
                   {e.label}
                 </span>
               </motion.button>
@@ -204,11 +238,12 @@ export default function Dashboard() {
 
       {/* Footer */}
       <div className="text-center pt-2">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.50)" }}>
           © {new Date().getFullYear()} Built with love using{" "}
           <a
             href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-            className="text-primary hover:underline"
+            className="hover:underline"
+            style={{ color: "rgba(255,255,255,0.75)" }}
             target="_blank"
             rel="noreferrer"
           >

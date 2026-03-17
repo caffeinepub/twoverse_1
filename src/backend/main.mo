@@ -1,6 +1,5 @@
 import Array "mo:core/Array";
 import Time "mo:core/Time";
-import Text "mo:core/Text";
 import List "mo:core/List";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
@@ -253,6 +252,16 @@ actor {
 
   public query ({ caller }) func getAllMemories() : async [MemoryVaultEntry] {
     memoryVault.values().toArray().sort(MemoryVaultEntry.compareByTimestamp);
+  };
+
+  public shared ({ caller }) func deleteMemory(memoryId : Nat) : async Bool {
+    switch (memoryVault.get(memoryId)) {
+      case (null) { false };
+      case (?memory) {
+        memoryVault.remove(memoryId);
+        true;
+      };
+    };
   };
 
   public shared ({ caller }) func addCheckIn(emotion : Text, note : ?Text) : async () {

@@ -72,7 +72,14 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="mx-auto max-w-[430px]">
-        <div className="bg-card/90 backdrop-blur-md border-t border-border flex items-center justify-around px-2 pb-safe">
+        <div
+          className="flex items-center justify-around px-2 pb-safe border-t"
+          style={{
+            background: "rgba(0,0,0,0.35)",
+            backdropFilter: "blur(16px)",
+            borderColor: "rgba(255,255,255,0.15)",
+          }}
+        >
           {navItems.map((item) => {
             const isActive = effectivePage === item.page;
             return (
@@ -86,22 +93,24 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
                 {isActive && (
                   <motion.div
                     layoutId="nav-pill"
-                    className="absolute inset-0 bg-primary/10 rounded-xl"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ background: "rgba(255,255,255,0.15)" }}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
                 <span
-                  className={`relative z-10 transition-colors ${
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  }`}
-                  style={{ filter: isActive ? "none" : "opacity(0.7)" }}
+                  className="relative z-10 transition-colors"
+                  style={{ opacity: isActive ? 1 : 0.55 }}
                 >
                   {item.icon}
                 </span>
                 <span
-                  className={`text-[10px] font-medium relative z-10 transition-colors ${
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  }`}
+                  className="text-[10px] font-medium relative z-10 transition-colors"
+                  style={{
+                    color: isActive
+                      ? "rgba(255,255,255,0.97)"
+                      : "rgba(255,255,255,0.55)",
+                  }}
                 >
                   {item.label}
                 </span>

@@ -172,6 +172,7 @@ export interface backendInterface {
     addReaction(messageId: bigint, emoji: string): Promise<void>;
     addTimeCapsuleMessage(content: string, authorName: string, unlockAt: bigint): Promise<void>;
     completeMission(missionId: bigint): Promise<void>;
+    deleteMemory(memoryId: bigint): Promise<boolean>;
     getAllAnniversaries(): Promise<Array<Anniversary>>;
     getAllCheckIns(): Promise<Array<CheckIn>>;
     getAllMemories(): Promise<Array<MemoryVaultEntry>>;
@@ -373,6 +374,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.completeMission(arg0);
+            return result;
+        }
+    }
+    async deleteMemory(arg0: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteMemory(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteMemory(arg0);
             return result;
         }
     }

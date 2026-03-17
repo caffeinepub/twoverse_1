@@ -52,17 +52,17 @@ export default function HeartParticles() {
     const createParticle = (yOverride?: number): Particle => ({
       x: Math.random() * canvas.width,
       y: yOverride !== undefined ? yOverride : canvas.height + 20,
-      size: Math.random() * 16 + 8,
-      speedY: Math.random() * 1.0 + 0.2,
+      size: Math.random() * 24 + 18,
+      speedY: Math.random() * 1.0 + 0.3,
       speedX: 0,
-      opacity: Math.random() * 0.37 + 0.08,
+      opacity: Math.random() * 0.35 + 0.55,
       shape: pickShape(),
       phase: Math.random() * Math.PI * 2,
-      waveAmp: Math.random() * 0.6 + 0.2,
+      waveAmp: Math.random() * 0.7 + 0.3,
       waveFreq: Math.random() * 0.015 + 0.008,
     });
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 60; i++) {
       const p = createParticle(Math.random() * canvas.height);
       particles.push(p);
     }
@@ -72,7 +72,7 @@ export default function HeartParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       frameCount++;
 
-      if (frameCount % 60 === 0 && particles.length < 55) {
+      if (frameCount % 30 === 0 && particles.length < 70) {
         particles.push(createParticle());
       }
 
@@ -82,8 +82,8 @@ export default function HeartParticles() {
         p.y -= p.speedY;
         p.x += Math.sin(frameCount * p.waveFreq + p.phase) * p.waveAmp;
 
-        if (p.y < canvas.height * 0.15) {
-          p.opacity -= 0.003;
+        if (p.y < canvas.height * 0.05) {
+          p.opacity -= 0.001;
         }
 
         const col = heartColorRef.current;
@@ -91,7 +91,7 @@ export default function HeartParticles() {
         ctx.globalAlpha = Math.max(0, p.opacity);
         ctx.font = `${p.size}px serif`;
         ctx.fillStyle = `${col}${Math.max(0, p.opacity)})`;
-        ctx.shadowBlur = p.size * 0.8;
+        ctx.shadowBlur = p.size * 1.5;
         ctx.shadowColor = `${col}0.6)`;
         ctx.fillText(GLYPHS[p.shape], p.x, p.y);
         ctx.restore();
@@ -112,7 +112,7 @@ export default function HeartParticles() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.8 }}
+      style={{ opacity: 1 }}
     />
   );
 }

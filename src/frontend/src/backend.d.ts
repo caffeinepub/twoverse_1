@@ -80,6 +80,7 @@ export interface backendInterface {
     addReaction(messageId: bigint, emoji: string): Promise<void>;
     addTimeCapsuleMessage(content: string, authorName: string, unlockAt: bigint): Promise<void>;
     completeMission(missionId: bigint): Promise<void>;
+    deleteMemory(memoryId: bigint): Promise<boolean>;
     getAllAnniversaries(): Promise<Array<Anniversary>>;
     getAllCheckIns(): Promise<Array<CheckIn>>;
     getAllMemories(): Promise<Array<MemoryVaultEntry>>;

@@ -100,6 +100,7 @@ export interface _SERVICE {
   'addReaction' : ActorMethod<[bigint, string], undefined>,
   'addTimeCapsuleMessage' : ActorMethod<[string, string, bigint], undefined>,
   'completeMission' : ActorMethod<[bigint], undefined>,
+  'deleteMemory' : ActorMethod<[bigint], boolean>,
   'getAllAnniversaries' : ActorMethod<[], Array<Anniversary>>,
   'getAllCheckIns' : ActorMethod<[], Array<CheckIn>>,
   'getAllMemories' : ActorMethod<[], Array<MemoryVaultEntry>>,

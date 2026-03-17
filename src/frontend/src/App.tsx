@@ -3,7 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import BottomNav from "./components/BottomNav";
-import HeartParticles from "./components/HeartParticles";
+import IntroScreen from "./components/IntroScreen";
+import LofiHeartBackground from "./components/LofiHeartBackground";
 import { ThemeProvider } from "./context/ThemeContext";
 import AnniversaryTracker from "./pages/AnniversaryTracker";
 import BondAnalytics from "./pages/BondAnalytics";
@@ -39,6 +40,14 @@ type Page =
 
 function AppInner() {
   const [page, setPage] = useState<Page>("dashboard");
+  const [showIntro, setShowIntro] = useState(
+    () => !sessionStorage.getItem("twoverse_intro_seen"),
+  );
+
+  const handleIntroDone = () => {
+    sessionStorage.setItem("twoverse_intro_seen", "1");
+    setShowIntro(false);
+  };
 
   const pages: Record<Page, React.ReactNode> = {
     dashboard: <Dashboard />,
@@ -54,9 +63,13 @@ function AppInner() {
   };
 
   return (
-    <div className="min-h-dvh bg-background relative overflow-x-hidden">
-      <HeartParticles />
-      <div className="mx-auto max-w-[430px] min-h-dvh relative flex flex-col">
+    <div className="min-h-dvh relative overflow-x-hidden">
+      {showIntro && <IntroScreen onDone={handleIntroDone} />}
+      <LofiHeartBackground />
+      <div
+        className="mx-auto max-w-[430px] min-h-dvh relative flex flex-col"
+        style={{ background: "transparent" }}
+      >
         <main className="flex-1 pb-20 overflow-y-auto relative z-10">
           <AnimatePresence mode="wait">
             <motion.div

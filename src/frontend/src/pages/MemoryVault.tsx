@@ -1,3 +1,13 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,24 +18,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Image, Loader2, Plus } from "lucide-react";
+import { Image, Loader2, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   nanoToDate,
   useAddMemory,
+  useDeleteMemory,
   useGetAllMemories,
 } from "../hooks/useQueries";
 
 export default function MemoryVault() {
   const { data: memories = [], isLoading } = useGetAllMemories();
   const addMemory = useAddMemory();
+  const deleteMemory = useDeleteMemory();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [photoBytes, setPhotoBytes] = useState<Uint8Array | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<bigint | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +74,17 @@ export default function MemoryVault() {
     );
   };
 
+  const handleDeleteConfirm = () => {
+    if (deleteId == null) return;
+    deleteMemory.mutate(deleteId, {
+      onSuccess: () => {
+        toast.success("Memory deleted 🗑️");
+        setDeleteId(null);
+      },
+      onError: () => toast.error("Couldn't delete memory"),
+    });
+  };
+
   const formatDate = (ts: bigint) => {
     return nanoToDate(ts).toLocaleDateString([], {
       year: "numeric",
@@ -74,10 +98,16 @@ export default function MemoryVault() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">
+          <h1
+            className="font-display text-2xl font-bold"
+            style={{ color: "rgba(255,255,255,0.97)" }}
+          >
             Memory Vault 📸
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p
+            className="text-xs mt-0.5"
+            style={{ color: "rgba(255,255,255,0.60)" }}
+          >
             {memories.length} {memories.length === 1 ? "memory" : "memories"}{" "}
             saved
           </p>
@@ -98,7 +128,10 @@ export default function MemoryVault() {
           data-ocid="memory.loading_state"
           className="flex justify-center py-16"
         >
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <Loader2
+            className="h-6 w-6 animate-spin"
+            style={{ color: "rgba(255,255,255,0.80)" }}
+          />
         </div>
       )}
 
@@ -109,11 +142,22 @@ export default function MemoryVault() {
           animate={{ opacity: 1 }}
           className="flex flex-col items-center justify-center py-16 gap-3"
         >
-          <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center text-4xl">
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+            style={{ background: "rgba(255,255,255,0.15)" }}
+          >
             📷
           </div>
-          <p className="text-muted-foreground font-medium">No memories yet</p>
-          <p className="text-muted-foreground text-xs text-center max-w-[200px]">
+          <p
+            className="font-medium"
+            style={{ color: "rgba(255,255,255,0.80)" }}
+          >
+            No memories yet
+          </p>
+          <p
+            className="text-xs text-center max-w-[200px]"
+            style={{ color: "rgba(255,255,255,0.55)" }}
+          >
             Start capturing beautiful moments together
           </p>
           <Button
@@ -135,7 +179,12 @@ export default function MemoryVault() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05, duration: 0.35 }}
-              className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card border border-border overflow-hidden"
+              className="rounded-3xl shadow-card border overflow-hidden"
+              style={{
+                background: "rgba(255,255,255,0.15)",
+                backdropFilter: "blur(12px)",
+                borderColor: "rgba(255,255,255,0.25)",
+              }}
             >
               {memory.photo && (
                 <div className="aspect-video w-full overflow-hidden">
@@ -149,14 +198,35 @@ export default function MemoryVault() {
               )}
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-display font-semibold text-foreground text-base leading-tight">
+                  <h3
+                    className="font-display font-semibold text-base leading-tight flex-1"
+                    style={{ color: "rgba(255,255,255,0.97)" }}
+                  >
                     {memory.title}
                   </h3>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatDate(memory.timestamp)}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <span
+                      className="text-xs whitespace-nowrap"
+                      style={{ color: "rgba(255,255,255,0.55)" }}
+                    >
+                      {formatDate(memory.timestamp)}
+                    </span>
+                    <button
+                      type="button"
+                      data-ocid={`memory.delete_button.${idx + 1}`}
+                      onClick={() => setDeleteId(memory.id)}
+                      className="p-1.5 rounded-xl transition-colors"
+                      style={{ color: "rgba(255,255,255,0.55)" }}
+                      title="Delete memory"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                <p
+                  className="text-sm leading-relaxed line-clamp-3"
+                  style={{ color: "rgba(255,255,255,0.75)" }}
+                >
                   {memory.content}
                 </p>
               </div>
@@ -165,6 +235,7 @@ export default function MemoryVault() {
         </AnimatePresence>
       </div>
 
+      {/* Add Memory Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-[380px] rounded-3xl">
           <DialogHeader>
@@ -179,6 +250,7 @@ export default function MemoryVault() {
               </Label>
               <Input
                 id="mem-title"
+                data-ocid="memory.title.input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Our first picnic..."
@@ -191,6 +263,7 @@ export default function MemoryVault() {
               </Label>
               <Textarea
                 id="mem-content"
+                data-ocid="memory.content.textarea"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Write about this beautiful moment..."
@@ -248,6 +321,7 @@ export default function MemoryVault() {
                 Cancel
               </Button>
               <Button
+                data-ocid="memory.submit_button"
                 className="flex-1 rounded-2xl"
                 onClick={handleSubmit}
                 disabled={
@@ -267,6 +341,46 @@ export default function MemoryVault() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog
+        open={deleteId != null}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+      >
+        <AlertDialogContent
+          data-ocid="memory.delete_dialog"
+          className="rounded-3xl max-w-[340px]"
+        >
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display">
+              Delete this memory?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This memory will be permanently removed. This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              data-ocid="memory.delete_cancel_button"
+              onClick={() => setDeleteId(null)}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-ocid="memory.delete_confirm_button"
+              onClick={handleDeleteConfirm}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {deleteMemory.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

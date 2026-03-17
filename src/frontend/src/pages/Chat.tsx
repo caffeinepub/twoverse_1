@@ -112,13 +112,23 @@ export default function Chat() {
   return (
     <div className="relative z-10 flex flex-col h-[calc(100dvh-80px)]">
       {/* Header */}
-      <div className="px-5 pt-8 pb-4 border-b border-border bg-background/80 backdrop-blur-sm">
+      <div
+        className="px-5 pt-8 pb-4 border-b"
+        style={{
+          background: "rgba(0,0,0,0.25)",
+          backdropFilter: "blur(12px)",
+          borderColor: "rgba(255,255,255,0.15)",
+        }}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-xl font-bold text-foreground">
+            <h1
+              className="font-display text-xl font-bold"
+              style={{ color: "rgba(255,255,255,0.97)" }}
+            >
               Our Chat 💬
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.60)" }}>
               {displayName
                 ? `Chatting as ${displayName}`
                 : "Set your name to chat"}
@@ -127,7 +137,8 @@ export default function Chat() {
           <button
             type="button"
             onClick={() => setNameDialogOpen(true)}
-            className="text-xs text-primary hover:text-primary/70 font-medium transition-colors"
+            className="text-xs font-medium transition-colors"
+            style={{ color: "rgba(255,255,255,0.85)" }}
           >
             {displayName ? "Change name" : "Set name"}
           </button>
@@ -138,7 +149,10 @@ export default function Chat() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {isLoading && (
           <div data-ocid="chat.loading_state" className="text-center py-8">
-            <div className="text-muted-foreground text-sm animate-pulse">
+            <div
+              className="text-sm animate-pulse"
+              style={{ color: "rgba(255,255,255,0.60)" }}
+            >
               Loading messages... 💕
             </div>
           </div>
@@ -146,8 +160,13 @@ export default function Chat() {
         {!isLoading && messages.length === 0 && (
           <div data-ocid="chat.empty_state" className="text-center py-16">
             <div className="text-4xl mb-3">💌</div>
-            <p className="text-muted-foreground text-sm">No messages yet.</p>
-            <p className="text-muted-foreground text-xs mt-1">
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
+              No messages yet.
+            </p>
+            <p
+              className="text-xs mt-1"
+              style={{ color: "rgba(255,255,255,0.50)" }}
+            >
               Send the first one!
             </p>
           </div>
@@ -165,7 +184,10 @@ export default function Chat() {
                 transition={{ duration: 0.25 }}
                 className={`flex flex-col ${isMine ? "items-end" : "items-start"} gap-1`}
               >
-                <span className="text-[11px] text-muted-foreground px-1 font-medium">
+                <span
+                  className="text-[11px] px-1 font-medium"
+                  style={{ color: "rgba(255,255,255,0.60)" }}
+                >
                   {msg.senderName}
                 </span>
 
@@ -175,17 +197,31 @@ export default function Chat() {
                     onClick={() =>
                       setPickerForMessage(isPickerOpen ? null : msg.id)
                     }
-                    className={`rounded-3xl px-4 py-2.5 max-w-[260px] text-left shadow-xs transition-all ${
+                    className="rounded-3xl px-4 py-2.5 max-w-[260px] text-left shadow-xs transition-all"
+                    style={
                       isMine
-                        ? "bg-primary text-primary-foreground rounded-tr-sm"
-                        : "bg-card border border-border text-foreground rounded-tl-sm"
-                    }`}
+                        ? {
+                            background: "rgba(255,255,255,0.30)",
+                            backdropFilter: "blur(8px)",
+                            borderRadius: "18px 18px 4px 18px",
+                          }
+                        : {
+                            background: "rgba(0,0,0,0.25)",
+                            backdropFilter: "blur(8px)",
+                            border: "1px solid rgba(255,255,255,0.15)",
+                            borderRadius: "18px 18px 18px 4px",
+                          }
+                    }
                   >
-                    <p className="text-sm leading-relaxed break-words">
+                    <p
+                      className="text-sm leading-relaxed break-words"
+                      style={{ color: "rgba(255,255,255,0.95)" }}
+                    >
                       {msg.content}
                     </p>
                     <p
-                      className={`text-[10px] mt-1 ${isMine ? "text-primary-foreground/60" : "text-muted-foreground"}`}
+                      className="text-[10px] mt-1"
+                      style={{ color: "rgba(255,255,255,0.55)" }}
                     >
                       {formatTime(msg.timestamp)}
                     </p>
@@ -197,7 +233,12 @@ export default function Chat() {
                         initial={{ opacity: 0, scale: 0.85, y: 4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.85, y: 4 }}
-                        className={`absolute z-20 bottom-full mb-2 bg-card border border-border rounded-2xl shadow-card-hover px-3 py-2 flex gap-1 ${isMine ? "right-0" : "left-0"}`}
+                        className={`absolute z-20 bottom-full mb-2 rounded-2xl shadow-card-hover px-3 py-2 flex gap-1 ${isMine ? "right-0" : "left-0"}`}
+                        style={{
+                          background: "rgba(0,0,0,0.50)",
+                          backdropFilter: "blur(12px)",
+                          border: "1px solid rgba(255,255,255,0.15)",
+                        }}
                       >
                         {REACTION_EMOJIS.map((emoji) => {
                           const key = reactionKey(msg.id, emoji);
@@ -207,7 +248,12 @@ export default function Chat() {
                               type="button"
                               key={emoji}
                               onClick={() => handleReaction(msg.id, emoji)}
-                              className={`text-xl p-1 rounded-xl transition-all hover:scale-125 ${mine ? "bg-primary/15" : "hover:bg-muted"}`}
+                              className="text-xl p-1 rounded-xl transition-all hover:scale-125"
+                              style={{
+                                background: mine
+                                  ? "rgba(255,255,255,0.20)"
+                                  : "transparent",
+                              }}
                             >
                               {emoji}
                             </button>
@@ -228,7 +274,16 @@ export default function Chat() {
                           type="button"
                           key={r.emoji}
                           onClick={() => handleReaction(msg.id, r.emoji)}
-                          className={`text-xs rounded-full px-2 py-0.5 border transition-all ${mine ? "bg-primary/15 border-primary/30" : "bg-card border-border"}`}
+                          className="text-xs rounded-full px-2 py-0.5 border transition-all"
+                          style={{
+                            background: mine
+                              ? "rgba(255,255,255,0.20)"
+                              : "rgba(0,0,0,0.20)",
+                            borderColor: mine
+                              ? "rgba(255,255,255,0.40)"
+                              : "rgba(255,255,255,0.15)",
+                            color: "rgba(255,255,255,0.90)",
+                          }}
                         >
                           {r.emoji} {Number(r.count)}
                         </button>
@@ -244,7 +299,14 @@ export default function Chat() {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-3 bg-background/90 backdrop-blur-sm border-t border-border">
+      <div
+        className="px-4 py-3 border-t"
+        style={{
+          background: "rgba(0,0,0,0.25)",
+          backdropFilter: "blur(12px)",
+          borderColor: "rgba(255,255,255,0.15)",
+        }}
+      >
         <div className="flex gap-2">
           <Input
             data-ocid="chat.input"
@@ -257,7 +319,12 @@ export default function Chat() {
               }
             }}
             placeholder="Type a message... 💕"
-            className="flex-1 rounded-2xl bg-card border-border text-sm"
+            className="flex-1 rounded-2xl text-sm"
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              borderColor: "rgba(255,255,255,0.25)",
+              color: "rgba(255,255,255,0.95)",
+            }}
             disabled={!displayName || sendMessage.isPending}
           />
           <Button
