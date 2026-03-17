@@ -107,6 +107,12 @@ export default function IntroScreen({ onDone }: IntroScreenProps) {
             </motion.div>
 
             {/* Title */}
+            <style>{`
+              @keyframes title-shimmer {
+                0% { background-position: -200% center; }
+                100% { background-position: 200% center; }
+              }
+            `}</style>
             <motion.h1
               initial={{ opacity: 0, y: 24, scale: 0.88 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -118,9 +124,14 @@ export default function IntroScreen({ onDone }: IntroScreenProps) {
               }}
               className="font-display text-5xl font-bold text-center leading-tight z-10"
               style={{
-                color: themeData?.isDark
-                  ? "#ffffff"
-                  : (themeData?.colors[0] ?? "#FF6E8C"),
+                background: themeData?.isDark
+                  ? "linear-gradient(90deg, #ffffff 0%, #ffffffaa 30%, #ffffff 50%, #ffffffaa 70%, #ffffff 100%)"
+                  : `linear-gradient(90deg, ${themeData?.colors[0] ?? "#FF6E8C"} 0%, ${themeData?.colors[0] ?? "#FF6E8C"}88 30%, #fff 50%, ${themeData?.colors[0] ?? "#FF6E8C"}88 70%, ${themeData?.colors[0] ?? "#FF6E8C"} 100%)`,
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                animation: "title-shimmer 2.5s linear infinite",
               }}
             >
               TwoVerse

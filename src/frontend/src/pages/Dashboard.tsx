@@ -19,11 +19,14 @@ const EMOTIONS: { emoji: string; label: string }[] = [
 ];
 
 const HEART_BURST = [
-  { sym: "💕", offset: -2 },
-  { sym: "🩷", offset: -1 },
-  { sym: "❤️", offset: 0 },
-  { sym: "💖", offset: 1 },
-  { sym: "💗", offset: 2 },
+  { sym: "💕", offset: -50 },
+  { sym: "🩷", offset: -30 },
+  { sym: "❤️", offset: -15 },
+  { sym: "💖", offset: 0 },
+  { sym: "💗", offset: 15 },
+  { sym: "✨", offset: 30 },
+  { sym: "💫", offset: 45 },
+  { sym: "🌸", offset: -40 },
 ];
 
 const isToday = (ts: bigint) => {
@@ -263,18 +266,18 @@ export default function Dashboard() {
               {HEART_BURST.map((h, i) => (
                 <motion.span
                   key={h.sym}
-                  initial={{ opacity: 1, y: 0, x: h.offset * 22, scale: 1 }}
+                  initial={{ opacity: 1, y: 0, x: h.offset * 0.6, scale: 1 }}
                   animate={{
                     opacity: 0,
-                    y: -70,
-                    x: h.offset * 28,
-                    scale: 1.5,
+                    y: -90,
+                    x: h.offset,
+                    scale: 1.6,
                   }}
                   exit={{ opacity: 0 }}
                   transition={{
-                    duration: 0.8,
+                    duration: 0.9,
                     ease: "easeOut",
-                    delay: i * 0.06,
+                    delay: i * 0.07,
                   }}
                   style={{
                     position: "absolute",

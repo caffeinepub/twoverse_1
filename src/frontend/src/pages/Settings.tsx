@@ -205,19 +205,58 @@ export default function Settings() {
                 }}
               >
                 {isSelected && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", bounce: 0.5, duration: 0.4 }}
-                    className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center shadow-sm"
-                    style={{ background: "rgba(255,255,255,0.90)" }}
-                  >
-                    <Check
-                      className="w-3 h-3"
-                      style={{ color: t.heartFill }}
-                      strokeWidth={3}
-                    />
-                  </motion.div>
+                  <>
+                    <style>{`
+                      @keyframes card-shimmer {
+                        0% { transform: translateX(-120%) skewX(-15deg); }
+                        100% { transform: translateX(320%) skewX(-15deg); }
+                      }
+                    `}</style>
+                    {/* Shimmer sweep overlay */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        overflow: "hidden",
+                        borderRadius: "inherit",
+                        pointerEvents: "none",
+                        zIndex: 1,
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "40%",
+                          height: "100%",
+                          background:
+                            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%)",
+                          animation: "card-shimmer 3s ease-in-out infinite",
+                        }}
+                      />
+                    </div>
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{
+                        type: "spring",
+                        bounce: 0.5,
+                        duration: 0.4,
+                      }}
+                      className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center shadow-sm"
+                      style={{
+                        background: "rgba(255,255,255,0.90)",
+                        zIndex: 2,
+                      }}
+                    >
+                      <Check
+                        className="w-3 h-3"
+                        style={{ color: t.heartFill }}
+                        strokeWidth={3}
+                      />
+                    </motion.div>
+                  </>
                 )}
                 <div className="flex gap-1 mb-2.5">
                   {[t.heartFill, t.heartHighlight, t.bgDeep].map((color) => (

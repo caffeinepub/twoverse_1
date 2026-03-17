@@ -39,15 +39,20 @@ function reactionKey(msgId: bigint, emoji: string) {
   return `${msgId.toString()}_${emoji}`;
 }
 
+const SPARKLE_SYMBOLS = ["✨", "💕", "💫", "🩷"];
 const SPARKLE_PARTICLES = [
-  { angle: 0, dist: 38, sym: "✨" },
-  { angle: 45, dist: 42, sym: "💫" },
-  { angle: 90, dist: 35, sym: "✨" },
-  { angle: 135, dist: 40, sym: "💫" },
-  { angle: 180, dist: 36, sym: "✨" },
-  { angle: 225, dist: 44, sym: "💫" },
-  { angle: 270, dist: 38, sym: "✨" },
-  { angle: 315, dist: 42, sym: "💫" },
+  { angle: 0, dist: 38, sym: SPARKLE_SYMBOLS[0] },
+  { angle: 30, dist: 42, sym: SPARKLE_SYMBOLS[1] },
+  { angle: 60, dist: 35, sym: SPARKLE_SYMBOLS[2] },
+  { angle: 90, dist: 44, sym: SPARKLE_SYMBOLS[3] },
+  { angle: 120, dist: 40, sym: SPARKLE_SYMBOLS[0] },
+  { angle: 150, dist: 36, sym: SPARKLE_SYMBOLS[1] },
+  { angle: 180, dist: 42, sym: SPARKLE_SYMBOLS[2] },
+  { angle: 210, dist: 38, sym: SPARKLE_SYMBOLS[3] },
+  { angle: 240, dist: 45, sym: SPARKLE_SYMBOLS[0] },
+  { angle: 270, dist: 36, sym: SPARKLE_SYMBOLS[1] },
+  { angle: 300, dist: 43, sym: SPARKLE_SYMBOLS[2] },
+  { angle: 330, dist: 40, sym: SPARKLE_SYMBOLS[3] },
 ];
 
 export default function Chat() {
@@ -378,7 +383,7 @@ export default function Chat() {
                         top: "50%",
                         left: "50%",
                         transform: "translate(-50%,-50%)",
-                        fontSize: "10px",
+                        fontSize: "12px",
                         pointerEvents: "none",
                         zIndex: 50,
                         lineHeight: 1,

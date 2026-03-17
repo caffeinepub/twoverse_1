@@ -1,5 +1,6 @@
 import { LayoutGrid } from "lucide-react";
 import { motion } from "motion/react";
+import { useTheme } from "../context/ThemeContext";
 
 type Page =
   | "dashboard"
@@ -68,6 +69,12 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
   const effectivePage = TOP_LEVEL_PAGES.includes(activePage)
     ? activePage
     : "more";
+  const { themeData } = useTheme();
+
+  // Theme-reactive accent line color at 30% opacity
+  const accentLine = `${themeData.heartFill}4D`;
+  // Radial glow for active item at 15% opacity
+  const activeGlow = `${themeData.heartFill}26`;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
@@ -75,12 +82,13 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
         <div
           className="flex items-center justify-around px-2 pb-safe"
           style={{
-            background: "rgba(0,0,0,0.40)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            borderTop: "1px solid rgba(255,255,255,0.18)",
+            background: "rgba(0,0,0,0.45)",
+            backdropFilter: "blur(32px)",
+            WebkitBackdropFilter: "blur(32px)",
+            borderTop: `1px solid ${accentLine}`,
             boxShadow:
-              "0 -1px 20px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.10)",
+              "0 -1px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.10)",
+            transition: "border-color 0.6s ease",
           }}
         >
           {navItems.map((item) => {
@@ -97,7 +105,9 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
                   <motion.div
                     layoutId="nav-pill"
                     className="absolute inset-0 rounded-xl"
-                    style={{ background: "rgba(255,255,255,0.18)" }}
+                    style={{
+                      background: `radial-gradient(ellipse 80% 70% at 50% 50%, ${activeGlow} 0%, rgba(255,255,255,0.14) 100%)`,
+                    }}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
