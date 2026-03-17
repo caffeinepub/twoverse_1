@@ -1,33 +1,87 @@
+import { LayoutGrid } from "lucide-react";
 import { motion } from "motion/react";
 
-type Page = "dashboard" | "chat" | "memories" | "settings";
+type Page =
+  | "dashboard"
+  | "chat"
+  | "memories"
+  | "settings"
+  | "more"
+  | "analytics"
+  | "missions"
+  | "timecapsule"
+  | "anniversaries"
+  | "quiz";
 
 interface BottomNavProps {
   activePage: Page;
   onNavigate: (page: Page) => void;
 }
 
-const navItems: { page: Page; icon: string; label: string; ocid: string }[] = [
-  { page: "dashboard", icon: "🏠", label: "Home", ocid: "nav.home_link" },
-  { page: "chat", icon: "💬", label: "Chat", ocid: "nav.chat_link" },
-  { page: "memories", icon: "📸", label: "Memories", ocid: "nav.memory_link" },
-  { page: "settings", icon: "⚙️", label: "Settings", ocid: "nav.settings_link" },
+const navItems: {
+  page: Page;
+  icon: React.ReactNode;
+  label: string;
+  ocid: string;
+}[] = [
+  {
+    page: "dashboard",
+    icon: <span className="text-xl">🏠</span>,
+    label: "Home",
+    ocid: "nav.home_link",
+  },
+  {
+    page: "chat",
+    icon: <span className="text-xl">💬</span>,
+    label: "Chat",
+    ocid: "nav.chat_link",
+  },
+  {
+    page: "memories",
+    icon: <span className="text-xl">📸</span>,
+    label: "Memories",
+    ocid: "nav.memory_link",
+  },
+  {
+    page: "settings",
+    icon: <span className="text-xl">⚙️</span>,
+    label: "Settings",
+    ocid: "nav.settings_link",
+  },
+  {
+    page: "more",
+    icon: <LayoutGrid className="w-5 h-5" />,
+    label: "More",
+    ocid: "nav.more_link",
+  },
+];
+
+const TOP_LEVEL_PAGES: Page[] = [
+  "dashboard",
+  "chat",
+  "memories",
+  "settings",
+  "more",
 ];
 
 export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
+  const effectivePage = TOP_LEVEL_PAGES.includes(activePage)
+    ? activePage
+    : "more";
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="mx-auto max-w-[430px]">
         <div className="bg-card/90 backdrop-blur-md border-t border-border flex items-center justify-around px-2 pb-safe">
           {navItems.map((item) => {
-            const isActive = activePage === item.page;
+            const isActive = effectivePage === item.page;
             return (
               <button
                 type="button"
                 key={item.page}
                 data-ocid={item.ocid}
                 onClick={() => onNavigate(item.page)}
-                className="relative flex flex-col items-center gap-0.5 py-3 px-4 rounded-xl transition-colors"
+                className="relative flex flex-col items-center gap-0.5 py-3 px-3 rounded-xl transition-colors"
               >
                 {isActive && (
                   <motion.div
@@ -37,8 +91,10 @@ export default function BottomNav({ activePage, onNavigate }: BottomNavProps) {
                   />
                 )}
                 <span
-                  className="text-xl relative z-10"
-                  style={{ filter: isActive ? "none" : "grayscale(0.3)" }}
+                  className={`relative z-10 transition-colors ${
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  }`}
+                  style={{ filter: isActive ? "none" : "opacity(0.7)" }}
                 >
                   {item.icon}
                 </span>

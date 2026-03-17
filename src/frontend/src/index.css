@@ -40,6 +40,9 @@
   --sidebar-accent-foreground: 0.3 0.1 10;
   --sidebar-border: 0.9 0.045 350;
   --sidebar-ring: 0.62 0.22 350;
+  --btn-gradient-from: 0.72 0.18 345;
+  --btn-gradient-to: 0.58 0.24 352;
+  --btn-shadow: rgba(220, 80, 120, 0.35);
 }
 
 /* ---- Midnight Blue ---- */
@@ -77,6 +80,9 @@
   --sidebar-accent-foreground: 0.95 0.01 230;
   --sidebar-border: 0.3 0.05 260;
   --sidebar-ring: 0.62 0.2 260;
+  --btn-gradient-from: 0.72 0.18 255;
+  --btn-gradient-to: 0.52 0.22 265;
+  --btn-shadow: rgba(100, 130, 240, 0.4);
 }
 
 /* ---- Golden Hour ---- */
@@ -114,6 +120,9 @@
   --sidebar-accent-foreground: 0.25 0.1 40;
   --sidebar-border: 0.88 0.07 80;
   --sidebar-ring: 0.65 0.2 55;
+  --btn-gradient-from: 0.75 0.17 60;
+  --btn-gradient-to: 0.58 0.22 48;
+  --btn-shadow: rgba(220, 160, 40, 0.4);
 }
 
 /* ---- Forest Green ---- */
@@ -151,6 +160,9 @@
   --sidebar-accent-foreground: 0.22 0.1 145;
   --sidebar-border: 0.87 0.06 160;
   --sidebar-ring: 0.5 0.16 160;
+  --btn-gradient-from: 0.62 0.14 162;
+  --btn-gradient-to: 0.42 0.18 155;
+  --btn-shadow: rgba(60, 170, 100, 0.4);
 }
 
 /* ---- Lavender Dream ---- */
@@ -188,6 +200,9 @@
   --sidebar-accent-foreground: 0.25 0.1 280;
   --sidebar-border: 0.88 0.05 305;
   --sidebar-ring: 0.6 0.2 305;
+  --btn-gradient-from: 0.7 0.18 300;
+  --btn-gradient-to: 0.52 0.22 308;
+  --btn-shadow: rgba(165, 90, 220, 0.4);
 }
 
 * {
@@ -222,4 +237,89 @@ html {
 
 .font-display {
   font-family: "Fraunces", Georgia, serif;
+}
+
+/* ---- Primary gradient pill button ---- */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(
+    135deg,
+    oklch(var(--btn-gradient-from)) 0%,
+    oklch(var(--btn-gradient-to)) 100%
+  );
+  color: oklch(var(--primary-foreground));
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.01em;
+  border: none;
+  box-shadow: 0 4px 20px var(--btn-shadow), 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 0.12s ease, box-shadow 0.2s ease, opacity 0.15s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    transparent 60%
+  );
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 28px var(--btn-shadow), 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 10px var(--btn-shadow);
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---- Secondary pill button ---- */
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background: oklch(var(--secondary));
+  color: oklch(var(--secondary-foreground));
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border: 1.5px solid oklch(var(--border));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: transform 0.12s ease, background 0.15s;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: oklch(var(--accent));
+}
+
+.btn-secondary:active {
+  transform: scale(0.96);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

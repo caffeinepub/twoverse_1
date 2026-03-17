@@ -38,7 +38,7 @@ export function useGetTodaysPrompt() {
       return actor.getTodaysPrompt();
     },
     enabled: !!actor && !isFetching,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -147,11 +147,7 @@ export function useAddMemory() {
       title,
       content,
       photoBytes,
-    }: {
-      title: string;
-      content: string;
-      photoBytes: Uint8Array | null;
-    }) => {
+    }: { title: string; content: string; photoBytes: Uint8Array | null }) => {
       if (!actor) throw new Error("Actor not ready");
       const photo = photoBytes
         ? ExternalBlob.fromBytes(photoBytes as Uint8Array<ArrayBuffer>)
@@ -173,6 +169,185 @@ export function useSetStartDate() {
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ["daysTogether", "startDate"] }),
+  });
+}
+
+// ---- Phase 2 ----
+
+export function useGetAllMissions() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["missions"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllMissions();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetTotalXP() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["totalXP"],
+    queryFn: async () => {
+      if (!actor) return 0n;
+      return actor.getTotalXP();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddMission() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      title,
+      description,
+      xpReward,
+    }: { title: string; description: string; xpReward: bigint }) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.addMission(title, description, xpReward);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["missions"] }),
+  });
+}
+
+export function useCompleteMission() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (missionId: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.completeMission(missionId);
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["missions", "totalXP"] }),
+  });
+}
+
+export function useGetAllTimeCapsuleMessages() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["timeCapsules"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllTimeCapsuleMessages();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetUnlockedTimeCapsuleMessages() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["unlockedTimeCapsules"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getUnlockedTimeCapsuleMessages();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddTimeCapsuleMessage() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      content,
+      authorName,
+      unlockAt,
+    }: { content: string; authorName: string; unlockAt: bigint }) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.addTimeCapsuleMessage(content, authorName, unlockAt);
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({
+        queryKey: ["timeCapsules", "unlockedTimeCapsules"],
+      }),
+  });
+}
+
+export function useGetAllAnniversaries() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["anniversaries"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllAnniversaries();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddAnniversary() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      title,
+      date,
+      emoji,
+    }: { title: string; date: bigint; emoji: string }) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.addAnniversary(title, date, emoji);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["anniversaries"] }),
+  });
+}
+
+export function useRemoveAnniversary() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.removeAnniversary(id);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["anniversaries"] }),
+  });
+}
+
+export function useGetQuizAnswers() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["quizAnswers"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getQuizAnswers();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetCompatibilityScore() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["compatibilityScore"],
+    queryFn: async () => {
+      if (!actor) return 0n;
+      return actor.getCompatibilityScore();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSubmitQuizAnswer() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      questionId,
+      partnerName,
+      answer,
+    }: { questionId: bigint; partnerName: string; answer: string }) => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.submitQuizAnswer(questionId, partnerName, answer);
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["quizAnswers", "compatibilityScore"] }),
   });
 }
 

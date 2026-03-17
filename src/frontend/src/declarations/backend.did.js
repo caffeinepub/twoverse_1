@@ -20,6 +20,12 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const Anniversary = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'date' : IDL.Int,
+  'emoji' : IDL.Text,
+});
 export const CheckIn = IDL.Record({
   'emotion' : IDL.Text,
   'note' : IDL.Opt(IDL.Text),
@@ -42,6 +48,35 @@ export const ChatMessage = IDL.Record({
   'timestamp' : IDL.Int,
   'senderName' : IDL.Text,
   'reactions' : IDL.Vec(EmojiReaction),
+});
+export const CoupleMission = IDL.Record({
+  'id' : IDL.Nat,
+  'completedAt' : IDL.Int,
+  'title' : IDL.Text,
+  'isCompleted' : IDL.Bool,
+  'xpReward' : IDL.Nat,
+  'description' : IDL.Text,
+});
+export const TimeCapsuleWithLockState = IDL.Record({
+  'id' : IDL.Nat,
+  'content' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'authorName' : IDL.Text,
+  'unlockAt' : IDL.Int,
+  'isUnlocked' : IDL.Bool,
+});
+export const QuizAnswer = IDL.Record({
+  'partnerName' : IDL.Text,
+  'answer' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'questionId' : IDL.Nat,
+});
+export const TimeCapsuleMessage = IDL.Record({
+  'id' : IDL.Nat,
+  'content' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'authorName' : IDL.Text,
+  'unlockAt' : IDL.Int,
 });
 
 export const idlService = IDL.Service({
@@ -71,18 +106,39 @@ export const idlService = IDL.Service({
       [],
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+  'addAnniversary' : IDL.Func([IDL.Text, IDL.Int, IDL.Text], [], []),
   'addCheckIn' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [], []),
   'addMemory' : IDL.Func([IDL.Text, IDL.Text, IDL.Opt(ExternalBlob)], [], []),
+  'addMission' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [], []),
   'addReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+  'addTimeCapsuleMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Int], [], []),
+  'completeMission' : IDL.Func([IDL.Nat], [], []),
+  'getAllAnniversaries' : IDL.Func([], [IDL.Vec(Anniversary)], ['query']),
   'getAllCheckIns' : IDL.Func([], [IDL.Vec(CheckIn)], ['query']),
   'getAllMemories' : IDL.Func([], [IDL.Vec(MemoryVaultEntry)], ['query']),
   'getAllMessages' : IDL.Func([], [IDL.Vec(ChatMessage)], ['query']),
+  'getAllMissions' : IDL.Func([], [IDL.Vec(CoupleMission)], ['query']),
+  'getAllTimeCapsuleMessages' : IDL.Func(
+      [],
+      [IDL.Vec(TimeCapsuleWithLockState)],
+      ['query'],
+    ),
+  'getCompatibilityScore' : IDL.Func([], [IDL.Nat], ['query']),
   'getDaysTogether' : IDL.Func([], [IDL.Opt(IDL.Int)], ['query']),
+  'getQuizAnswers' : IDL.Func([], [IDL.Vec(QuizAnswer)], ['query']),
   'getStartDate' : IDL.Func([], [IDL.Opt(IDL.Int)], ['query']),
   'getTodaysPrompt' : IDL.Func([], [IDL.Text], ['query']),
+  'getTotalXP' : IDL.Func([], [IDL.Nat], ['query']),
+  'getUnlockedTimeCapsuleMessages' : IDL.Func(
+      [],
+      [IDL.Vec(TimeCapsuleMessage)],
+      ['query'],
+    ),
+  'removeAnniversary' : IDL.Func([IDL.Nat], [], []),
   'removeReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'sendMessage' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'setStartDate' : IDL.Func([IDL.Int], [], []),
+  'submitQuizAnswer' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [], []),
 });
 
 export const idlInitArgs = [];
@@ -100,6 +156,12 @@ export const idlFactory = ({ IDL }) => {
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const Anniversary = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'date' : IDL.Int,
+    'emoji' : IDL.Text,
+  });
   const CheckIn = IDL.Record({
     'emotion' : IDL.Text,
     'note' : IDL.Opt(IDL.Text),
@@ -119,6 +181,35 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : IDL.Int,
     'senderName' : IDL.Text,
     'reactions' : IDL.Vec(EmojiReaction),
+  });
+  const CoupleMission = IDL.Record({
+    'id' : IDL.Nat,
+    'completedAt' : IDL.Int,
+    'title' : IDL.Text,
+    'isCompleted' : IDL.Bool,
+    'xpReward' : IDL.Nat,
+    'description' : IDL.Text,
+  });
+  const TimeCapsuleWithLockState = IDL.Record({
+    'id' : IDL.Nat,
+    'content' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'authorName' : IDL.Text,
+    'unlockAt' : IDL.Int,
+    'isUnlocked' : IDL.Bool,
+  });
+  const QuizAnswer = IDL.Record({
+    'partnerName' : IDL.Text,
+    'answer' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'questionId' : IDL.Nat,
+  });
+  const TimeCapsuleMessage = IDL.Record({
+    'id' : IDL.Nat,
+    'content' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'authorName' : IDL.Text,
+    'unlockAt' : IDL.Int,
   });
   
   return IDL.Service({
@@ -148,18 +239,39 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+    'addAnniversary' : IDL.Func([IDL.Text, IDL.Int, IDL.Text], [], []),
     'addCheckIn' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [], []),
     'addMemory' : IDL.Func([IDL.Text, IDL.Text, IDL.Opt(ExternalBlob)], [], []),
+    'addMission' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [], []),
     'addReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+    'addTimeCapsuleMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Int], [], []),
+    'completeMission' : IDL.Func([IDL.Nat], [], []),
+    'getAllAnniversaries' : IDL.Func([], [IDL.Vec(Anniversary)], ['query']),
     'getAllCheckIns' : IDL.Func([], [IDL.Vec(CheckIn)], ['query']),
     'getAllMemories' : IDL.Func([], [IDL.Vec(MemoryVaultEntry)], ['query']),
     'getAllMessages' : IDL.Func([], [IDL.Vec(ChatMessage)], ['query']),
+    'getAllMissions' : IDL.Func([], [IDL.Vec(CoupleMission)], ['query']),
+    'getAllTimeCapsuleMessages' : IDL.Func(
+        [],
+        [IDL.Vec(TimeCapsuleWithLockState)],
+        ['query'],
+      ),
+    'getCompatibilityScore' : IDL.Func([], [IDL.Nat], ['query']),
     'getDaysTogether' : IDL.Func([], [IDL.Opt(IDL.Int)], ['query']),
+    'getQuizAnswers' : IDL.Func([], [IDL.Vec(QuizAnswer)], ['query']),
     'getStartDate' : IDL.Func([], [IDL.Opt(IDL.Int)], ['query']),
     'getTodaysPrompt' : IDL.Func([], [IDL.Text], ['query']),
+    'getTotalXP' : IDL.Func([], [IDL.Nat], ['query']),
+    'getUnlockedTimeCapsuleMessages' : IDL.Func(
+        [],
+        [IDL.Vec(TimeCapsuleMessage)],
+        ['query'],
+      ),
+    'removeAnniversary' : IDL.Func([IDL.Nat], [], []),
     'removeReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'sendMessage' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'setStartDate' : IDL.Func([IDL.Int], [], []),
+    'submitQuizAnswer' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [], []),
   });
 };
 

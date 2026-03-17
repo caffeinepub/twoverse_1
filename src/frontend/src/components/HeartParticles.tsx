@@ -8,8 +8,24 @@ interface Particle {
   speedY: number;
   speedX: number;
   opacity: number;
-  opacityDelta: number;
+  shape: "heart" | "sparkle" | "star";
+  phase: number;
+  waveAmp: number;
+  waveFreq: number;
 }
+
+function pickShape(): Particle["shape"] {
+  const r = Math.random();
+  if (r < 0.6) return "heart";
+  if (r < 0.85) return "sparkle";
+  return "star";
+}
+
+const GLYPHS: Record<Particle["shape"], string> = {
+  heart: "\u2665",
+  sparkle: "\u2726",
+  star: "\u2605",
+};
 
 export default function HeartParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -33,20 +49,21 @@ export default function HeartParticles() {
     resize();
     window.addEventListener("resize", resize);
 
-    const createParticle = (): Particle => ({
+    const createParticle = (yOverride?: number): Particle => ({
       x: Math.random() * canvas.width,
-      y: canvas.height + 20,
-      size: Math.random() * 14 + 8,
-      speedY: Math.random() * 0.8 + 0.3,
-      speedX: (Math.random() - 0.5) * 0.4,
-      opacity: Math.random() * 0.35 + 0.1,
-      opacityDelta: 0,
+      y: yOverride !== undefined ? yOverride : canvas.height + 20,
+      size: Math.random() * 16 + 8,
+      speedY: Math.random() * 1.0 + 0.2,
+      speedX: 0,
+      opacity: Math.random() * 0.37 + 0.08,
+      shape: pickShape(),
+      phase: Math.random() * Math.PI * 2,
+      waveAmp: Math.random() * 0.6 + 0.2,
+      waveFreq: Math.random() * 0.015 + 0.008,
     });
 
-    // seed initial particles spread across the canvas
-    for (let i = 0; i < 18; i++) {
-      const p = createParticle();
-      p.y = Math.random() * canvas.height;
+    for (let i = 0; i < 40; i++) {
+      const p = createParticle(Math.random() * canvas.height);
       particles.push(p);
     }
 
@@ -55,27 +72,28 @@ export default function HeartParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       frameCount++;
 
-      // spawn new particle every ~90 frames
-      if (frameCount % 90 === 0 && particles.length < 30) {
+      if (frameCount % 60 === 0 && particles.length < 55) {
         particles.push(createParticle());
       }
 
-      particles = particles.filter((p) => p.y > -30 && p.opacity > 0);
+      particles = particles.filter((p) => p.y > -40 && p.opacity > 0);
 
       for (const p of particles) {
         p.y -= p.speedY;
-        p.x += p.speedX;
+        p.x += Math.sin(frameCount * p.waveFreq + p.phase) * p.waveAmp;
 
-        // gently fade near top
         if (p.y < canvas.height * 0.15) {
-          p.opacity -= 0.004;
+          p.opacity -= 0.003;
         }
 
+        const col = heartColorRef.current;
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.opacity);
         ctx.font = `${p.size}px serif`;
-        ctx.fillStyle = `${heartColorRef.current}${p.opacity})`;
-        ctx.fillText("♥", p.x, p.y);
+        ctx.fillStyle = `${col}${Math.max(0, p.opacity)})`;
+        ctx.shadowBlur = p.size * 0.8;
+        ctx.shadowColor = `${col}0.6)`;
+        ctx.fillText(GLYPHS[p.shape], p.x, p.y);
         ctx.restore();
       }
 
@@ -94,7 +112,7 @@ export default function HeartParticles() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.8 }}
     />
   );
 }

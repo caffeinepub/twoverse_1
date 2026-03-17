@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, Loader2 } from "lucide-react";
@@ -33,7 +32,7 @@ export default function Settings() {
   const handleSaveDate = () => {
     if (!dateInput) return;
     setStartDate.mutate(dateInput, {
-      onSuccess: () => toast.success("Start date saved! 💕"),
+      onSuccess: () => toast.success("Start date saved! \ud83d\udc95"),
       onError: () => toast.error("Couldn't save start date"),
     });
   };
@@ -49,7 +48,7 @@ export default function Settings() {
         transition={{ duration: 0.4 }}
       >
         <h1 className="font-display text-2xl font-bold text-foreground">
-          Settings ⚙️
+          Settings \u2699\ufe0f
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
           Customize your TwoVerse experience
@@ -65,7 +64,7 @@ export default function Settings() {
           className="bg-primary/10 rounded-3xl p-4 text-center border border-primary/20"
         >
           <p className="font-display text-3xl font-bold text-primary">
-            💕 {daysNum}
+            \ud83d\udc95 {daysNum}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {daysNum === 1 ? "day" : "days"} of your love story
@@ -81,7 +80,7 @@ export default function Settings() {
         className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-5 border border-border"
       >
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xl">📅</span>
+          <span className="text-xl">\ud83d\udcc5</span>
           <div>
             <h2 className="font-semibold text-foreground text-sm">
               Start Date
@@ -109,11 +108,12 @@ export default function Settings() {
               max={new Date().toISOString().split("T")[0]}
             />
           </div>
-          <Button
+          <button
+            type="button"
             data-ocid="settings.save_date_button"
             onClick={handleSaveDate}
             disabled={!dateInput || setStartDate.isPending}
-            className="w-full rounded-2xl"
+            className="btn-primary"
           >
             {setStartDate.isPending ? (
               <>
@@ -126,9 +126,9 @@ export default function Settings() {
                 Saved!
               </>
             ) : (
-              "Save Start Date 💕"
+              "Save Start Date \ud83d\udc95"
             )}
-          </Button>
+          </button>
         </div>
       </motion.div>
 
@@ -140,40 +140,74 @@ export default function Settings() {
         className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-5 border border-border"
       >
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xl">🎨</span>
+          <span className="text-xl">\ud83c\udfa8</span>
           <div>
             <h2 className="font-semibold text-foreground text-sm">Theme</h2>
             <p className="text-xs text-muted-foreground">Choose your vibe</p>
           </div>
         </div>
-        <div className="space-y-2">
-          {THEMES.map((t, idx) => (
-            <motion.button
-              key={t.id}
-              data-ocid={`settings.theme_button.${idx + 1}`}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setTheme(t.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all text-left ${
-                theme === t.id
-                  ? "border-primary bg-primary/10"
-                  : "border-border bg-background hover:border-primary/40"
-              }`}
-            >
-              <span className="text-2xl">{t.emoji}</span>
-              <span className="font-medium text-sm text-foreground flex-1">
-                {t.name}
-              </span>
-              {theme === t.id && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", bounce: 0.5 }}
+        <div className="grid grid-cols-2 gap-3">
+          {THEMES.map((t, idx) => {
+            const isSelected = theme === t.id;
+            return (
+              <motion.button
+                key={t.id}
+                data-ocid={`settings.theme_button.${idx + 1}`}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setTheme(t.id)}
+                className="relative text-left rounded-2xl p-3 border-2 transition-all overflow-hidden"
+                style={{
+                  borderColor: isSelected
+                    ? t.colors[0]
+                    : "oklch(var(--border))",
+                  background: t.isDark
+                    ? `linear-gradient(135deg, ${t.colors[2]}ee 0%, ${t.colors[2]}cc 100%)`
+                    : `linear-gradient(135deg, ${t.colors[2]}cc 0%, ${t.colors[2]}88 100%)`,
+                }}
+              >
+                {isSelected && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", bounce: 0.5, duration: 0.4 }}
+                    className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center shadow-sm"
+                    style={{ background: t.colors[0] }}
+                  >
+                    <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                  </motion.div>
+                )}
+                <div className="flex gap-1 mb-2.5">
+                  {t.colors.map((color) => (
+                    <div
+                      key={color}
+                      className="w-5 h-5 rounded-full border-2 border-white/50 shadow-sm flex-shrink-0"
+                      style={{ background: color }}
+                    />
+                  ))}
+                </div>
+                <p
+                  className="font-semibold text-xs leading-tight"
+                  style={{
+                    color: t.isDark
+                      ? "rgba(255,255,255,0.92)"
+                      : "rgba(30,20,30,0.85)",
+                  }}
                 >
-                  <Check className="h-4 w-4 text-primary" />
-                </motion.div>
-              )}
-            </motion.button>
-          ))}
+                  {t.name}
+                </p>
+                <p
+                  className="text-[10px] mt-0.5 leading-tight"
+                  style={{
+                    color: t.isDark
+                      ? "rgba(255,255,255,0.55)"
+                      : "rgba(30,20,30,0.5)",
+                  }}
+                >
+                  {t.description}
+                </p>
+              </motion.button>
+            );
+          })}
         </div>
       </motion.div>
 
@@ -185,7 +219,7 @@ export default function Settings() {
         className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-card p-5 border border-border"
       >
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-xl">💝</span>
+          <span className="text-xl">\ud83d\udc9d</span>
           <h2 className="font-semibold text-foreground text-sm">
             About TwoVerse
           </h2>
@@ -199,7 +233,7 @@ export default function Settings() {
       {/* Footer */}
       <div className="text-center pt-2">
         <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()}. Built with love using{" "}
+          \u00a9 {new Date().getFullYear()}. Built with love using{" "}
           <a
             href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
             className="text-primary hover:underline"

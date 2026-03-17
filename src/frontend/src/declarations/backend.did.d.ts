@@ -10,6 +10,12 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Anniversary {
+  'id' : bigint,
+  'title' : string,
+  'date' : bigint,
+  'emoji' : string,
+}
 export interface ChatMessage {
   'id' : bigint,
   'content' : string,
@@ -22,6 +28,14 @@ export interface CheckIn {
   'note' : [] | [string],
   'timestamp' : bigint,
 }
+export interface CoupleMission {
+  'id' : bigint,
+  'completedAt' : bigint,
+  'title' : string,
+  'isCompleted' : boolean,
+  'xpReward' : bigint,
+  'description' : string,
+}
 export interface EmojiReaction { 'count' : bigint, 'emoji' : string }
 export type ExternalBlob = Uint8Array;
 export interface MemoryVaultEntry {
@@ -30,6 +44,27 @@ export interface MemoryVaultEntry {
   'content' : string,
   'timestamp' : bigint,
   'photo' : [] | [ExternalBlob],
+}
+export interface QuizAnswer {
+  'partnerName' : string,
+  'answer' : string,
+  'timestamp' : bigint,
+  'questionId' : bigint,
+}
+export interface TimeCapsuleMessage {
+  'id' : bigint,
+  'content' : string,
+  'createdAt' : bigint,
+  'authorName' : string,
+  'unlockAt' : bigint,
+}
+export interface TimeCapsuleWithLockState {
+  'id' : bigint,
+  'content' : string,
+  'createdAt' : bigint,
+  'authorName' : string,
+  'unlockAt' : bigint,
+  'isUnlocked' : boolean,
 }
 export interface _CaffeineStorageCreateCertificateResult {
   'method' : string,
@@ -58,18 +93,34 @@ export interface _SERVICE {
     _CaffeineStorageRefillResult
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
+  'addAnniversary' : ActorMethod<[string, bigint, string], undefined>,
   'addCheckIn' : ActorMethod<[string, [] | [string]], undefined>,
   'addMemory' : ActorMethod<[string, string, [] | [ExternalBlob]], undefined>,
+  'addMission' : ActorMethod<[string, string, bigint], undefined>,
   'addReaction' : ActorMethod<[bigint, string], undefined>,
+  'addTimeCapsuleMessage' : ActorMethod<[string, string, bigint], undefined>,
+  'completeMission' : ActorMethod<[bigint], undefined>,
+  'getAllAnniversaries' : ActorMethod<[], Array<Anniversary>>,
   'getAllCheckIns' : ActorMethod<[], Array<CheckIn>>,
   'getAllMemories' : ActorMethod<[], Array<MemoryVaultEntry>>,
   'getAllMessages' : ActorMethod<[], Array<ChatMessage>>,
+  'getAllMissions' : ActorMethod<[], Array<CoupleMission>>,
+  'getAllTimeCapsuleMessages' : ActorMethod<
+    [],
+    Array<TimeCapsuleWithLockState>
+  >,
+  'getCompatibilityScore' : ActorMethod<[], bigint>,
   'getDaysTogether' : ActorMethod<[], [] | [bigint]>,
+  'getQuizAnswers' : ActorMethod<[], Array<QuizAnswer>>,
   'getStartDate' : ActorMethod<[], [] | [bigint]>,
   'getTodaysPrompt' : ActorMethod<[], string>,
+  'getTotalXP' : ActorMethod<[], bigint>,
+  'getUnlockedTimeCapsuleMessages' : ActorMethod<[], Array<TimeCapsuleMessage>>,
+  'removeAnniversary' : ActorMethod<[bigint], undefined>,
   'removeReaction' : ActorMethod<[bigint, string], undefined>,
   'sendMessage' : ActorMethod<[string, string], undefined>,
   'setStartDate' : ActorMethod<[bigint], undefined>,
+  'submitQuizAnswer' : ActorMethod<[bigint, string, string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

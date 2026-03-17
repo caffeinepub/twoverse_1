@@ -89,10 +89,38 @@ export class ExternalBlob {
         return this;
     }
 }
+export interface TimeCapsuleWithLockState {
+    id: bigint;
+    content: string;
+    createdAt: bigint;
+    authorName: string;
+    unlockAt: bigint;
+    isUnlocked: boolean;
+}
+export interface CoupleMission {
+    id: bigint;
+    completedAt: bigint;
+    title: string;
+    isCompleted: boolean;
+    xpReward: bigint;
+    description: string;
+}
+export interface QuizAnswer {
+    partnerName: string;
+    answer: string;
+    timestamp: bigint;
+    questionId: bigint;
+}
 export interface CheckIn {
     emotion: string;
     note?: string;
     timestamp: bigint;
+}
+export interface Anniversary {
+    id: bigint;
+    title: string;
+    date: bigint;
+    emoji: string;
 }
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
@@ -103,6 +131,13 @@ export interface ChatMessage {
     timestamp: bigint;
     senderName: string;
     reactions: Array<EmojiReaction>;
+}
+export interface TimeCapsuleMessage {
+    id: bigint;
+    content: string;
+    createdAt: bigint;
+    authorName: string;
+    unlockAt: bigint;
 }
 export interface _CaffeineStorageCreateCertificateResult {
     method: string;
@@ -130,18 +165,31 @@ export interface backendInterface {
     _caffeineStorageCreateCertificate(blobHash: string): Promise<_CaffeineStorageCreateCertificateResult>;
     _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
+    addAnniversary(title: string, date: bigint, emoji: string): Promise<void>;
     addCheckIn(emotion: string, note: string | null): Promise<void>;
     addMemory(title: string, content: string, photo: ExternalBlob | null): Promise<void>;
+    addMission(title: string, description: string, xpReward: bigint): Promise<void>;
     addReaction(messageId: bigint, emoji: string): Promise<void>;
+    addTimeCapsuleMessage(content: string, authorName: string, unlockAt: bigint): Promise<void>;
+    completeMission(missionId: bigint): Promise<void>;
+    getAllAnniversaries(): Promise<Array<Anniversary>>;
     getAllCheckIns(): Promise<Array<CheckIn>>;
     getAllMemories(): Promise<Array<MemoryVaultEntry>>;
     getAllMessages(): Promise<Array<ChatMessage>>;
+    getAllMissions(): Promise<Array<CoupleMission>>;
+    getAllTimeCapsuleMessages(): Promise<Array<TimeCapsuleWithLockState>>;
+    getCompatibilityScore(): Promise<bigint>;
     getDaysTogether(): Promise<bigint | null>;
+    getQuizAnswers(): Promise<Array<QuizAnswer>>;
     getStartDate(): Promise<bigint | null>;
     getTodaysPrompt(): Promise<string>;
+    getTotalXP(): Promise<bigint>;
+    getUnlockedTimeCapsuleMessages(): Promise<Array<TimeCapsuleMessage>>;
+    removeAnniversary(id: bigint): Promise<void>;
     removeReaction(messageId: bigint, emoji: string): Promise<void>;
     sendMessage(senderName: string, content: string): Promise<void>;
     setStartDate(timestamp: bigint): Promise<void>;
+    submitQuizAnswer(questionId: bigint, partnerName: string, answer: string): Promise<void>;
 }
 import type { CheckIn as _CheckIn, ExternalBlob as _ExternalBlob, MemoryVaultEntry as _MemoryVaultEntry, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -230,6 +278,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async addAnniversary(arg0: string, arg1: bigint, arg2: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addAnniversary(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addAnniversary(arg0, arg1, arg2);
+            return result;
+        }
+    }
     async addCheckIn(arg0: string, arg1: string | null): Promise<void> {
         if (this.processError) {
             try {
@@ -258,6 +320,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async addMission(arg0: string, arg1: string, arg2: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addMission(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addMission(arg0, arg1, arg2);
+            return result;
+        }
+    }
     async addReaction(arg0: bigint, arg1: string): Promise<void> {
         if (this.processError) {
             try {
@@ -269,6 +345,48 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.addReaction(arg0, arg1);
+            return result;
+        }
+    }
+    async addTimeCapsuleMessage(arg0: string, arg1: string, arg2: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addTimeCapsuleMessage(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addTimeCapsuleMessage(arg0, arg1, arg2);
+            return result;
+        }
+    }
+    async completeMission(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.completeMission(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.completeMission(arg0);
+            return result;
+        }
+    }
+    async getAllAnniversaries(): Promise<Array<Anniversary>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllAnniversaries();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllAnniversaries();
             return result;
         }
     }
@@ -314,6 +432,48 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getAllMissions(): Promise<Array<CoupleMission>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllMissions();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllMissions();
+            return result;
+        }
+    }
+    async getAllTimeCapsuleMessages(): Promise<Array<TimeCapsuleWithLockState>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllTimeCapsuleMessages();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllTimeCapsuleMessages();
+            return result;
+        }
+    }
+    async getCompatibilityScore(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCompatibilityScore();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCompatibilityScore();
+            return result;
+        }
+    }
     async getDaysTogether(): Promise<bigint | null> {
         if (this.processError) {
             try {
@@ -326,6 +486,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getDaysTogether();
             return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getQuizAnswers(): Promise<Array<QuizAnswer>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getQuizAnswers();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getQuizAnswers();
+            return result;
         }
     }
     async getStartDate(): Promise<bigint | null> {
@@ -353,6 +527,48 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getTodaysPrompt();
+            return result;
+        }
+    }
+    async getTotalXP(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTotalXP();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTotalXP();
+            return result;
+        }
+    }
+    async getUnlockedTimeCapsuleMessages(): Promise<Array<TimeCapsuleMessage>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUnlockedTimeCapsuleMessages();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUnlockedTimeCapsuleMessages();
+            return result;
+        }
+    }
+    async removeAnniversary(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.removeAnniversary(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.removeAnniversary(arg0);
             return result;
         }
     }
@@ -395,6 +611,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.setStartDate(arg0);
+            return result;
+        }
+    }
+    async submitQuizAnswer(arg0: bigint, arg1: string, arg2: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.submitQuizAnswer(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.submitQuizAnswer(arg0, arg1, arg2);
             return result;
         }
     }

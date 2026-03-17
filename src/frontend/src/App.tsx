@@ -5,10 +5,16 @@ import { useState } from "react";
 import BottomNav from "./components/BottomNav";
 import HeartParticles from "./components/HeartParticles";
 import { ThemeProvider } from "./context/ThemeContext";
+import AnniversaryTracker from "./pages/AnniversaryTracker";
+import BondAnalytics from "./pages/BondAnalytics";
 import Chat from "./pages/Chat";
+import CoupleQuiz from "./pages/CoupleQuiz";
 import Dashboard from "./pages/Dashboard";
 import MemoryVault from "./pages/MemoryVault";
+import Missions from "./pages/Missions";
+import MoreHub from "./pages/MoreHub";
 import Settings from "./pages/Settings";
+import TimeCapsule from "./pages/TimeCapsule";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +25,17 @@ const queryClient = new QueryClient({
   },
 });
 
-type Page = "dashboard" | "chat" | "memories" | "settings";
+type Page =
+  | "dashboard"
+  | "chat"
+  | "memories"
+  | "settings"
+  | "more"
+  | "analytics"
+  | "missions"
+  | "timecapsule"
+  | "anniversaries"
+  | "quiz";
 
 function AppInner() {
   const [page, setPage] = useState<Page>("dashboard");
@@ -29,6 +45,12 @@ function AppInner() {
     chat: <Chat />,
     memories: <MemoryVault />,
     settings: <Settings />,
+    more: <MoreHub onNavigate={setPage} />,
+    analytics: <BondAnalytics onBack={() => setPage("more")} />,
+    missions: <Missions onBack={() => setPage("more")} />,
+    timecapsule: <TimeCapsule onBack={() => setPage("more")} />,
+    anniversaries: <AnniversaryTracker onBack={() => setPage("more")} />,
+    quiz: <CoupleQuiz onBack={() => setPage("more")} />,
   };
 
   return (
