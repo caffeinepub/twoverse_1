@@ -4,6 +4,23 @@ import { useActor } from "./useActor";
 
 const nanoToDate = (ns: bigint) => new Date(Number(ns / 1_000_000n));
 
+// Types for features not yet in generated backend.ts
+export interface LovePulse {
+  id: bigint;
+  senderName: string;
+  timestamp: bigint;
+}
+
+export interface RelationshipDNA {
+  topEmotions: string[];
+  bondPersonality: string;
+  totalMessages: bigint;
+  totalMemories: bigint;
+  totalCheckIns: bigint;
+  completedMissions: bigint;
+  currentStreak: bigint;
+}
+
 export function useGetDaysTogether() {
   const { actor, isFetching } = useActor();
   return useQuery({
@@ -712,13 +729,11 @@ export function useSendVoiceNote() {
 
 export function useGetLovePulses() {
   const { actor, isFetching } = useActor();
-  return useQuery({
+  return useQuery<LovePulse[]>({
     queryKey: ["lovePulses"],
     queryFn: async () => {
       if (!actor) return [];
-      return (actor as any).getLovePulses() as Promise<
-        Array<{ id: bigint; senderName: string; timestamp: bigint }>
-      >;
+      return (actor as any).getLovePulses() as Promise<LovePulse[]>;
     },
     enabled: !!actor && !isFetching,
     refetchInterval: 15_000,
@@ -731,7 +746,7 @@ export function useSendLovePulse() {
   return useMutation({
     mutationFn: async ({ senderName }: { senderName: string }) => {
       if (!actor) throw new Error("Actor not ready");
-      return (actor as any).sendLovePulse(senderName);
+      return (actor as any).sendLovePulse(senderName) as Promise<void>;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lovePulses"] }),
   });
@@ -739,19 +754,11 @@ export function useSendLovePulse() {
 
 export function useGetRelationshipDNA() {
   const { actor, isFetching } = useActor();
-  return useQuery({
+  return useQuery<RelationshipDNA | null>({
     queryKey: ["relationshipDNA"],
     queryFn: async () => {
       if (!actor) return null;
-      return (actor as any).getRelationshipDNA() as Promise<{
-        topEmotions: string[];
-        bondPersonality: string;
-        totalMessages: bigint;
-        totalMemories: bigint;
-        totalCheckIns: bigint;
-        completedMissions: bigint;
-        currentStreak: bigint;
-      }>;
+      return (actor as any).getRelationshipDNA() as Promise<RelationshipDNA>;
     },
     enabled: !!actor && !isFetching,
   });

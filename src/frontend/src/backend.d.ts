@@ -102,6 +102,20 @@ export interface ChatMessage {
     reactions: Array<EmojiReaction>;
     voiceBlob?: ExternalBlob;
 }
+export interface LovePulse {
+    id: bigint;
+    senderName: string;
+    timestamp: bigint;
+}
+export interface RelationshipDNA {
+    topEmotions: string[];
+    bondPersonality: string;
+    totalMessages: bigint;
+    totalMemories: bigint;
+    totalCheckIns: bigint;
+    completedMissions: bigint;
+    currentStreak: bigint;
+}
 export interface backendInterface {
     addAnniversary(title: string, date: bigint, emoji: string): Promise<void>;
     addCheckIn(emotion: string, note: string | null): Promise<void>;
@@ -130,8 +144,10 @@ export interface backendInterface {
     getConversationStarterSeed(): Promise<bigint>;
     getCurrentWeekChallenges(): Promise<Array<CoupleChallenge>>;
     getDaysTogether(): Promise<bigint | null>;
+    getLovePulses(): Promise<Array<LovePulse>>;
     getMoodPrediction(): Promise<boolean>;
     getQuizAnswers(): Promise<Array<QuizAnswer>>;
+    getRelationshipDNA(): Promise<RelationshipDNA>;
     getRelationshipLevel(): Promise<bigint>;
     getRelationshipXP(): Promise<bigint>;
     getSeasonalThemeEnabled(): Promise<boolean>;
@@ -147,6 +163,7 @@ export interface backendInterface {
     removeAnniversary(id: bigint): Promise<void>;
     removeReaction(messageId: bigint, emoji: string): Promise<void>;
     resetWeeklyChallenges(): Promise<void>;
+    sendLovePulse(senderName: string): Promise<void>;
     sendMessage(senderName: string, content: string): Promise<void>;
     sendVoiceNote(senderName: string, voiceBlob: ExternalBlob): Promise<void>;
     setCoachTipSeed(seed: bigint): Promise<void>;
