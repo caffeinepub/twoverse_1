@@ -207,12 +207,20 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         transition={{ duration: 0.5 }}
         className="text-center mb-2"
       >
-        <p
-          className="text-sm font-medium tracking-widest uppercase mb-1"
-          style={{ color: "rgba(255,255,255,0.70)" }}
-        >
-          TwoVerse
-        </p>
+        <div className="flex items-center justify-center gap-2">
+          <img
+            src="/assets/uploads/Picsart_26-03-18_07-07-49-444-1.png"
+            alt="TwoVerse"
+            className="w-8 h-8 object-contain rounded-lg"
+            style={{ filter: "brightness(0) invert(1)" }}
+          />
+          <p
+            className="text-sm font-medium tracking-widest uppercase mb-0"
+            style={{ color: "rgba(255,255,255,0.70)" }}
+          >
+            TwoVerse
+          </p>
+        </div>
       </motion.div>
 
       {/* Couple Card */}

@@ -504,7 +504,8 @@ export function useAddPhotoOfDay() {
       const photo = ExternalBlob.fromBytes(
         photoBytes as Uint8Array<ArrayBuffer>,
       );
-      return (actor as any).addPhotoOfDay(caption, photo, date);
+      const dateTs = BigInt(new Date(date).getTime()) * BigInt(1_000_000);
+      return (actor as any).addPhotoOfDay(caption, photo, dateTs);
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ["photosOfDay", "todaysPhoto"] }),

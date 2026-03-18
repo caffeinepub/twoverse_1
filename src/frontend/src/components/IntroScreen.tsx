@@ -34,6 +34,11 @@ export default function IntroScreen({ onDone }: IntroScreenProps) {
     ? `linear-gradient(160deg, ${themeData.colors[2]} 0%, ${themeData.colors[0]}55 100%)`
     : `linear-gradient(160deg, ${themeData?.colors[2] ?? "#FFF0F3"} 0%, ${themeData?.colors[1] ?? "#FFB3C6"}88 100%)`;
 
+  const primaryColor = themeData?.colors[0] ?? "#FF6E8C";
+  const outerGlow = `radial-gradient(circle, ${primaryColor}55 0%, transparent 70%)`;
+  const innerGlow = `radial-gradient(circle, ${primaryColor}33 0%, transparent 65%)`;
+  const logoShadow = `drop-shadow(0 0 24px ${primaryColor}88) drop-shadow(0 0 8px ${primaryColor}66)`;
+
   return (
     <AnimatePresence>
       {visible && (
@@ -55,7 +60,7 @@ export default function IntroScreen({ onDone }: IntroScreenProps) {
                 left: `${f.x}%`,
                 top: `${f.y}%`,
                 fontSize: `${f.size}px`,
-                color: themeData?.colors[0] ?? "#FF6E8C",
+                color: primaryColor,
                 opacity: 0.35,
               }}
               animate={{
@@ -76,66 +81,70 @@ export default function IntroScreen({ onDone }: IntroScreenProps) {
 
           {/* Center content */}
           <div className="flex flex-col items-center gap-4 px-8">
-            {/* Glow ring */}
+            {/* Outer glow pulse ring */}
             <motion.div
               initial={{ scale: 0.6, opacity: 0 }}
-              animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.7, 0.4] }}
+              animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
               transition={{
                 duration: 2.5,
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "easeInOut",
               }}
-              className="absolute w-72 h-72 rounded-full pointer-events-none"
+              className="absolute w-64 h-64 rounded-full pointer-events-none"
               style={{
-                background: `radial-gradient(circle, ${themeData?.colors[0] ?? "#FF6E8C"}44 0%, transparent 70%)`,
+                background: outerGlow,
+                filter: "blur(12px)",
               }}
             />
 
-            {/* Main emoji */}
+            {/* Inner glow ring */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: [1, 1.08, 1], opacity: [0.5, 0.9, 0.5] }}
+              transition={{
+                duration: 1.8,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+                delay: 0.4,
+              }}
+              className="absolute w-52 h-52 rounded-full pointer-events-none"
+              style={{
+                background: innerGlow,
+                filter: "blur(6px)",
+              }}
+            />
+
+            {/* App Logo */}
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              animate={{ scale: 1, opacity: 1, y: [0, -8, 0] }}
               transition={{
-                type: "spring",
-                bounce: 0.5,
-                delay: 0.15,
-                duration: 0.8,
+                scale: {
+                  type: "spring",
+                  bounce: 0.5,
+                  delay: 0.15,
+                  duration: 0.8,
+                },
+                opacity: { delay: 0.15, duration: 0.5 },
+                y: {
+                  duration: 3,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                  delay: 1,
+                },
               }}
-              className="text-6xl z-10"
+              className="z-10 relative"
             >
-              🩷
+              <img
+                src="/assets/uploads/Picsart_26-03-18_07-07-49-444-1.png"
+                alt="TwoVerse Logo"
+                className="w-48 h-48 object-contain rounded-3xl"
+                style={{
+                  filter: logoShadow,
+                  mixBlendMode: "multiply",
+                }}
+              />
             </motion.div>
-
-            {/* Title */}
-            <style>{`
-              @keyframes title-shimmer {
-                0% { background-position: -200% center; }
-                100% { background-position: 200% center; }
-              }
-            `}</style>
-            <motion.h1
-              initial={{ opacity: 0, y: 24, scale: 0.88 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                type: "spring",
-                bounce: 0.35,
-                delay: 0.3,
-                duration: 0.9,
-              }}
-              className="font-display text-5xl font-bold text-center leading-tight z-10"
-              style={{
-                background: themeData?.isDark
-                  ? "linear-gradient(90deg, #ffffff 0%, #ffffffaa 30%, #ffffff 50%, #ffffffaa 70%, #ffffff 100%)"
-                  : `linear-gradient(90deg, ${themeData?.colors[0] ?? "#FF6E8C"} 0%, ${themeData?.colors[0] ?? "#FF6E8C"}88 30%, #fff 50%, ${themeData?.colors[0] ?? "#FF6E8C"}88 70%, ${themeData?.colors[0] ?? "#FF6E8C"} 100%)`,
-                backgroundSize: "200% auto",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                animation: "title-shimmer 2.5s linear infinite",
-              }}
-            >
-              TwoVerse
-            </motion.h1>
 
             {/* Subtitle */}
             <motion.p
@@ -146,7 +155,7 @@ export default function IntroScreen({ onDone }: IntroScreenProps) {
               style={{
                 color: themeData?.isDark
                   ? "rgba(255,255,255,0.6)"
-                  : `${themeData?.colors[0] ?? "#FF6E8C"}aa`,
+                  : `${primaryColor}aa`,
                 letterSpacing: "0.25em",
               }}
             >
@@ -166,7 +175,7 @@ export default function IntroScreen({ onDone }: IntroScreenProps) {
               style={{
                 color: themeData?.isDark
                   ? "rgba(255,255,255,0.35)"
-                  : `${themeData?.colors[0] ?? "#FF6E8C"}66`,
+                  : `${primaryColor}66`,
               }}
             >
               tap to continue

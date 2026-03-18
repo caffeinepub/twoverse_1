@@ -1,30 +1,27 @@
 # TwoVerse
 
 ## Current State
-TwoVerse is a couples companion app with a full backend (Motoko) and React frontend. Currently live with:
-- Dashboard, Chat (with voice notes), Memory Vault, Settings
-- Bond Analytics, Missions, Time Capsule, Anniversary Tracker, Couple Quiz, Love Letters, Photo of the Day, Couple Challenges
-- AI Relationship Coach, Conversation Starters, Mood Prediction
-- Seasonal Themes, Love Streaks, Relationship Levels/XP, Day/Night Mode, Emotion Heatmap Calendar
-- Couple's Universe (animated galaxy tab)
+- Animated intro screen shows a '🩷 TwoVerse' text with floating hearts and glow ring
+- Photo of the Day feature exists but fails with 'Couldn't save photo' error
+- Love Pulse feature exists on Dashboard but fails with 'Couldn't send pulse' error
+- No app logo image is used anywhere
 
 ## Requested Changes (Diff)
 
 ### Add
-- **Haptic Love Pulse**: A button (accessible from Dashboard or Chat) that sends a "heartbeat" vibration to the partner. Uses the Web Vibration API for the local device. Stores a pulse log in the backend so both partners can see recent pulse timestamps. Displays a pulsing animated heart UI.
-- **Relationship DNA**: A new section inside Bond Analytics showing an evolving couple profile. Derived from real app data (check-ins, messages, memories, streaks, XP, challenges). Displays: top emotions from check-ins, bond personality label (e.g. "Adventurous Duo", "Cozy Homebodies"), activity summary stats, and a visual DNA strand or card layout.
+- Animated TwoVerse logo image (`/assets/uploads/Picsart_26-03-18_07-07-49-444-1.png`) to the IntroScreen, replacing the plain emoji/text title
+- Logo should animate in with spring scale, gentle glow pulse, and subtle float
+- Small logo in app header/top bar across pages for brand identity
 
 ### Modify
-- Backend: Add `sendLovePulse`, `getLovePulses` endpoints to store/retrieve pulse timestamps
-- BondAnalytics page: Add Relationship DNA section at the bottom
-- Dashboard: Add a Haptic Love Pulse button/card
+- Fix `useAddPhotoOfDay` in `useQueries.ts`: the `date` parameter is passed as a string (e.g. '2026-03-18') but the backend `addPhotoOfDay` expects an `Int` (nanosecond timestamp / bigint). Convert date string to `BigInt(new Date(date).getTime()) * BigInt(1_000_000)` before calling the actor.
+- Fix Love Pulse: investigate and ensure `sendLovePulse` and `getLovePulses` are called correctly. If the issue is a type mismatch or actor error, correct it. Also confirm `getLovePulses` query key matches the invalidation key.
 
 ### Remove
-- Nothing
+- Plain emoji 🩷 and 'TwoVerse' text title from intro screen (replace with logo image)
 
 ## Implementation Plan
-1. Add `LovePulse` type and storage to backend
-2. Add `sendLovePulse` (shared) and `getLovePulses` (query) functions
-3. Frontend: Add HapticPulse button component with animated heart and vibration
-4. Frontend: Add Relationship DNA section to BondAnalytics page
-5. Frontend: Add Love Pulse button to Dashboard quick-action tiles
+1. Fix `useAddPhotoOfDay` in `src/frontend/src/hooks/useQueries.ts` to convert string date to bigint nanoseconds
+2. Verify and fix `useSendLovePulse` / `useGetLovePulses` hooks if any issues found
+3. Update `IntroScreen.tsx` to use the logo image with animated entry
+4. Add small logo to app header (e.g. in App.tsx or a shared header component)
