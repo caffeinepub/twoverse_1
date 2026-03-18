@@ -61,6 +61,11 @@ export interface LoveLetter {
   'createdAt' : bigint,
   'authorName' : string,
 }
+export interface LovePulse {
+  'id' : bigint,
+  'senderName' : string,
+  'timestamp' : bigint,
+}
 export interface MemoryVaultEntry {
   'id' : bigint,
   'title' : string,
@@ -80,6 +85,15 @@ export interface QuizAnswer {
   'answer' : string,
   'timestamp' : bigint,
   'questionId' : bigint,
+}
+export interface RelationshipDNA {
+  'topEmotions' : Array<string>,
+  'bondPersonality' : string,
+  'totalMessages' : bigint,
+  'totalMemories' : bigint,
+  'totalCheckIns' : bigint,
+  'completedMissions' : bigint,
+  'currentStreak' : bigint,
 }
 export interface TimeCapsuleMessage {
   'id' : bigint,
@@ -153,8 +167,10 @@ export interface _SERVICE {
   'getConversationStarterSeed' : ActorMethod<[], bigint>,
   'getCurrentWeekChallenges' : ActorMethod<[], Array<CoupleChallenge>>,
   'getDaysTogether' : ActorMethod<[], [] | [bigint]>,
+  'getLovePulses' : ActorMethod<[], Array<LovePulse>>,
   'getMoodPrediction' : ActorMethod<[], boolean>,
   'getQuizAnswers' : ActorMethod<[], Array<QuizAnswer>>,
+  'getRelationshipDNA' : ActorMethod<[], RelationshipDNA>,
   'getRelationshipLevel' : ActorMethod<[], bigint>,
   'getRelationshipXP' : ActorMethod<[], bigint>,
   'getSeasonalThemeEnabled' : ActorMethod<[], boolean>,
@@ -170,6 +186,7 @@ export interface _SERVICE {
   'removeAnniversary' : ActorMethod<[bigint], undefined>,
   'removeReaction' : ActorMethod<[bigint, string], undefined>,
   'resetWeeklyChallenges' : ActorMethod<[], undefined>,
+  'sendLovePulse' : ActorMethod<[string], undefined>,
   'sendMessage' : ActorMethod<[string, string], undefined>,
   'sendVoiceNote' : ActorMethod<[string, ExternalBlob], undefined>,
   'setCoachTipSeed' : ActorMethod<[bigint], undefined>,

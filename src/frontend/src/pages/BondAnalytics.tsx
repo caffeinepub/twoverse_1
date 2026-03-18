@@ -8,7 +8,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { nanoToDate, useGetAllCheckIns } from "../hooks/useQueries";
+import {
+  nanoToDate,
+  useGetAllCheckIns,
+  useGetRelationshipDNA,
+} from "../hooks/useQueries";
 
 interface Props {
   onBack: () => void;
@@ -25,6 +29,7 @@ const EMOTION_EMOJIS: Record<string, string> = {
 
 export default function BondAnalytics({ onBack }: Props) {
   const { data: checkIns = [] } = useGetAllCheckIns();
+  const { data: dna } = useGetRelationshipDNA();
 
   // Emotion frequency
   const emotionCounts: Record<string, number> = {};
@@ -198,6 +203,178 @@ export default function BondAnalytics({ onBack }: Props) {
         <p className="text-xs text-muted-foreground mt-2">
           Based on {checkIns.length} check-ins — keep going to reach 100%!
         </p>
+      </motion.div>
+      {/* Relationship DNA */}
+      <motion.div
+        data-ocid="analytics.relationship_dna_card"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-card/80 backdrop-blur-sm rounded-3xl border border-border shadow-card p-5 space-y-4"
+      >
+        {/* Heading */}
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🧬</span>
+          <h2 className="font-semibold text-sm text-foreground">
+            Relationship DNA
+          </h2>
+        </div>
+
+        {/* DNA helix visual */}
+        <div className="flex items-center justify-center py-2">
+          <svg
+            width="180"
+            height="44"
+            viewBox="0 0 180 44"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            aria-label="Relationship DNA double helix"
+          >
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => {
+              const x = 10 + i * 20;
+              const y1 = 8 + Math.sin((i / 8) * Math.PI * 2) * 14;
+              const y2 = 36 - Math.sin((i / 8) * Math.PI * 2) * 14;
+              return (
+                <g key={i}>
+                  <circle
+                    cx={x}
+                    cy={y1}
+                    r={5}
+                    fill="oklch(var(--primary))"
+                    opacity={0.7 + 0.3 * ((i % 3) / 2)}
+                  />
+                  <circle
+                    cx={x}
+                    cy={y2}
+                    r={5}
+                    fill="oklch(var(--accent))"
+                    opacity={0.7 + 0.3 * ((i % 3) / 2)}
+                  />
+                  <line
+                    x1={x}
+                    y1={y1 + 5}
+                    x2={x}
+                    y2={y2 - 5}
+                    stroke="oklch(var(--border))"
+                    strokeWidth={1.5}
+                    strokeDasharray="2 2"
+                  />
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
+        {dna ? (
+          <>
+            {/* Bond Personality */}
+            <div className="text-center">
+              <p
+                className="font-display text-2xl font-bold text-primary"
+                style={{ textShadow: "0 0 20px oklch(var(--primary) / 0.5)" }}
+              >
+                {dna.bondPersonality}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Your couple personality
+              </p>
+            </div>
+
+            {/* Top Emotions */}
+            {dna.topEmotions.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground font-medium mb-2">
+                  Top Emotions
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {dna.topEmotions.slice(0, 3).map((emotion) => {
+                    const emojiMap: Record<string, string> = {
+                      happy: "😊",
+                      loving: "💕",
+                      excited: "🎉",
+                      calm: "🌸",
+                      tired: "😴",
+                      sad: "🥺",
+                      stressed: "😰",
+                      grateful: "🙏",
+                    };
+                    const emoji = emojiMap[emotion.toLowerCase()] ?? "💫";
+                    return (
+                      <span
+                        key={emotion}
+                        data-ocid="analytics.emotion_badge"
+                        className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1"
+                        style={{
+                          background: "oklch(var(--primary) / 0.15)",
+                          color: "oklch(var(--primary))",
+                          border: "1px solid oklch(var(--primary) / 0.30)",
+                        }}
+                      >
+                        {emoji} {emotion}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                {
+                  label: "Messages",
+                  value: String(dna.totalMessages),
+                  emoji: "💬",
+                },
+                {
+                  label: "Memories",
+                  value: String(dna.totalMemories),
+                  emoji: "📸",
+                },
+                {
+                  label: "Check-ins",
+                  value: String(dna.totalCheckIns),
+                  emoji: "🫶",
+                },
+                {
+                  label: "Missions",
+                  value: String(dna.completedMissions),
+                  emoji: "🎯",
+                },
+                {
+                  label: "Streak",
+                  value: String(dna.currentStreak),
+                  emoji: "🔥",
+                },
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  data-ocid={`analytics.dna_stat.${i + 1}`}
+                  className="rounded-2xl border border-border bg-muted/30 p-3 text-center"
+                >
+                  <p className="text-lg mb-0.5">{stat.emoji}</p>
+                  <p className="font-bold text-base text-foreground">
+                    {stat.value}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div
+            data-ocid="analytics.dna_loading_state"
+            className="text-center py-6"
+          >
+            <p className="text-3xl mb-2">🧬</p>
+            <p className="text-sm text-muted-foreground">
+              Loading your DNA profile...
+            </p>
+          </div>
+        )}
       </motion.div>
     </div>
   );

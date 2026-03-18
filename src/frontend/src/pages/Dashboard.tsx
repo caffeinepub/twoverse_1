@@ -9,10 +9,12 @@ import {
   useAddCheckIn,
   useGetAllCheckIns,
   useGetDaysTogether,
+  useGetLovePulses,
   useGetMoodPrediction,
   useGetRelationshipXP,
   useGetStreakCount,
   useGetTodaysPrompt,
+  useSendLovePulse,
 } from "../hooks/useQueries";
 
 interface DashboardProps {
@@ -88,10 +90,16 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const { data: relationshipXP } = useGetRelationshipXP();
   const addCheckIn = useAddCheckIn();
   const { data: moodAlert } = useGetMoodPrediction();
+  const { data: lovePulses = [] } = useGetLovePulses();
+  const sendLovePulse = useSendLovePulse();
   const { themeData } = useTheme();
   const queryClient = useQueryClient();
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [moodBannerDismissed, setMoodBannerDismissed] = useState(false);
+  const [showPulseModal, setShowPulseModal] = useState(false);
+  const [pulseNameInput, setPulseNameInput] = useState<string>(
+    () => localStorage.getItem("twoverse_partner_name") ?? "",
+  );
 
   // Goal state
   const [goal, setGoal] = useState<string>(
@@ -162,6 +170,33 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   };
 
   const heartAccent = themeData.heartFill;
+
+  const timeAgo = (ns: bigint) => {
+    const ms = Date.now() - Number(ns / 1_000_000n);
+    const s = Math.floor(ms / 1000);
+    if (s < 60) return "just now";
+    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+    return `${Math.floor(s / 86400)}d ago`;
+  };
+
+  const handleSendPulse = () => {
+    const name = pulseNameInput.trim() || "Someone";
+    localStorage.setItem("twoverse_partner_name", name);
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+    sendLovePulse.mutate(
+      { senderName: name },
+      {
+        onSuccess: () => {
+          toast.success("💓 Pulse sent!");
+          setShowPulseModal(false);
+        },
+        onError: () => toast.error("Couldn't send pulse"),
+      },
+    );
+  };
 
   return (
     <div className="relative z-10 px-4 pt-8 pb-6 space-y-4">
@@ -530,6 +565,219 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           </span>
         </motion.button>
       </motion.div>
+
+      {/* Love Pulse Card */}
+      <motion.div
+        data-ocid="dashboard.love_pulse_card"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.26, duration: 0.45 }}
+        className="rounded-3xl border p-5"
+        style={CARD_STYLE}
+      >
+        {/* Pulse button */}
+        <div className="flex flex-col items-center gap-3 mb-4">
+          <motion.button
+            data-ocid="dashboard.love_pulse_button"
+            type="button"
+            whileTap={{ scale: 0.92 }}
+            onClick={() => setShowPulseModal(true)}
+            className="relative flex items-center justify-center w-20 h-20 rounded-full"
+            style={{
+              background: "rgba(255,100,130,0.18)",
+              border: "2px solid rgba(255,100,130,0.45)",
+            }}
+          >
+            {/* Ripple rings */}
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "2px solid rgba(255,100,130,0.45)",
+                }}
+                animate={{ scale: [1, 1.7], opacity: [0.5, 0] }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  delay: i * 0.65,
+                  ease: "easeOut",
+                }}
+              />
+            ))}
+            <motion.span
+              animate={{ scale: [1, 1.12, 1] }}
+              transition={{
+                duration: 1.4,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+              className="text-4xl z-10"
+            >
+              💓
+            </motion.span>
+          </motion.button>
+          <div className="text-center">
+            <p
+              className="text-sm font-semibold"
+              style={{ color: "rgba(255,255,255,0.92)" }}
+            >
+              Love Pulse
+            </p>
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
+              Tap to send a heartbeat 💗
+            </p>
+          </div>
+        </div>
+
+        {/* Recent pulses */}
+        {lovePulses.length > 0 && (
+          <div className="space-y-1.5">
+            <p
+              className="text-xs font-semibold uppercase tracking-widest mb-2"
+              style={{ color: "rgba(255,255,255,0.55)" }}
+            >
+              Recent Pulses
+            </p>
+            {lovePulses
+              .slice(-5)
+              .reverse()
+              .map((p, i) => (
+                <div
+                  key={String(p.id)}
+                  data-ocid={`dashboard.pulse_item.${i + 1}`}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.08)" }}
+                >
+                  <span className="text-base">💓</span>
+                  <p
+                    className="text-xs flex-1"
+                    style={{ color: "rgba(255,255,255,0.80)" }}
+                  >
+                    <span className="font-semibold">{p.senderName}</span> sent a
+                    pulse
+                  </p>
+                  <span
+                    className="text-xs"
+                    style={{ color: "rgba(255,255,255,0.45)" }}
+                  >
+                    {timeAgo(p.timestamp)}
+                  </span>
+                </div>
+              ))}
+          </div>
+        )}
+        {lovePulses.length === 0 && (
+          <p
+            data-ocid="dashboard.pulse_empty_state"
+            className="text-center text-xs italic"
+            style={{ color: "rgba(255,255,255,0.40)" }}
+          >
+            No pulses yet — be the first! 💓
+          </p>
+        )}
+      </motion.div>
+
+      {/* Pulse Name Modal */}
+      <AnimatePresence>
+        {showPulseModal && (
+          <motion.div
+            data-ocid="dashboard.pulse_modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center pb-10 px-5"
+            style={{
+              background: "rgba(0,0,0,0.55)",
+              backdropFilter: "blur(4px)",
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowPulseModal(false);
+            }}
+          >
+            <motion.div
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
+              transition={{ type: "spring", bounce: 0.25 }}
+              className="w-full max-w-sm rounded-3xl p-6 space-y-4"
+              style={{
+                background: "rgba(30,15,25,0.92)",
+                border: "1px solid rgba(255,100,130,0.30)",
+                backdropFilter: "blur(20px)",
+              }}
+            >
+              <div className="text-center">
+                <motion.div
+                  animate={{ scale: [1, 1.12, 1] }}
+                  transition={{
+                    duration: 1.4,
+                    repeat: Number.POSITIVE_INFINITY,
+                  }}
+                  className="text-5xl mb-2"
+                >
+                  💓
+                </motion.div>
+                <h3
+                  className="font-display text-xl font-bold"
+                  style={{ color: "rgba(255,255,255,0.97)" }}
+                >
+                  Send a Love Pulse
+                </h3>
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: "rgba(255,255,255,0.55)" }}
+                >
+                  Your partner will feel your heartbeat
+                </p>
+              </div>
+              <input
+                data-ocid="dashboard.pulse_name_input"
+                value={pulseNameInput}
+                onChange={(e) => setPulseNameInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendPulse()}
+                placeholder="Your name..."
+                className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(255,255,255,0.20)",
+                  color: "rgba(255,255,255,0.90)",
+                }}
+              />
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  data-ocid="dashboard.pulse_cancel_button"
+                  onClick={() => setShowPulseModal(false)}
+                  className="flex-1 rounded-xl py-3 text-sm font-semibold"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    color: "rgba(255,255,255,0.60)",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  data-ocid="dashboard.pulse_submit_button"
+                  onClick={handleSendPulse}
+                  disabled={sendLovePulse.isPending}
+                  className="flex-1 rounded-xl py-3 text-sm font-bold"
+                  style={{
+                    background: "linear-gradient(135deg, #ff6482, #ff3366)",
+                    color: "#fff",
+                    boxShadow: "0 4px 20px rgba(255,50,100,0.40)",
+                  }}
+                >
+                  {sendLovePulse.isPending ? "Sending..." : "Send 💓"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Daily Prompt */}
       <motion.div

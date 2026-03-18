@@ -708,3 +708,50 @@ export function useSendVoiceNote() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["messages"] }),
   });
 }
+
+export function useGetLovePulses() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["lovePulses"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return (actor as any).getLovePulses() as Promise<
+        Array<{ id: bigint; senderName: string; timestamp: bigint }>
+      >;
+    },
+    enabled: !!actor && !isFetching,
+    refetchInterval: 15_000,
+  });
+}
+
+export function useSendLovePulse() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ senderName }: { senderName: string }) => {
+      if (!actor) throw new Error("Actor not ready");
+      return (actor as any).sendLovePulse(senderName);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lovePulses"] }),
+  });
+}
+
+export function useGetRelationshipDNA() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["relationshipDNA"],
+    queryFn: async () => {
+      if (!actor) return null;
+      return (actor as any).getRelationshipDNA() as Promise<{
+        topEmotions: string[];
+        bondPersonality: string;
+        totalMessages: bigint;
+        totalMemories: bigint;
+        totalCheckIns: bigint;
+        completedMissions: bigint;
+        currentStreak: bigint;
+      }>;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}

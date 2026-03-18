@@ -9,9 +9,9 @@ import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   include MixinStorage();
 
@@ -36,6 +36,12 @@ actor {
   module LoveLetter {
     public func compareByCreatedAt(a : LoveLetter, b : LoveLetter) : Order.Order {
       Int.compare(b.createdAt, a.createdAt);
+    };
+  };
+
+  module LovePulse {
+    public func compareByTimestamp(a : LovePulse, b : LovePulse) : Order.Order {
+      Int.compare(b.timestamp, a.timestamp);
     };
   };
 
@@ -131,6 +137,22 @@ actor {
     anniversaries : Nat;
   };
 
+  type LovePulse = {
+    id : Nat;
+    senderName : Text;
+    timestamp : Int;
+  };
+
+  type RelationshipDNA = {
+    topEmotions : [Text];
+    bondPersonality : Text;
+    totalMessages : Nat;
+    totalMemories : Nat;
+    totalCheckIns : Nat;
+    completedMissions : Nat;
+    currentStreak : Nat;
+  };
+
   // Stable variables
   var startDate : ?Int = null;
   var nextMessageId = 0;
@@ -140,6 +162,7 @@ actor {
   var nextAnniversaryId = 0;
   var nextLoveLetterId = 0;
   var nextPhotoOfDayId = 0;
+  var nextLovePulseId = 0;
   var sharedGoal : Text = "";
   var streakCount : Nat = 0;
   var lastStreakDay : Int = -1;
@@ -161,6 +184,7 @@ actor {
   let loveLetters = Map.empty<Nat, LoveLetter>();
   let photosOfDay = Map.empty<Nat, PhotoOfDay>();
   let challenges = Map.empty<Nat, CoupleChallenge>();
+  let lovePulses = Map.empty<Nat, LovePulse>();
 
   let dailyPrompts : [Text] = [
     "Share a favorite memory from your relationship.",
@@ -786,5 +810,99 @@ actor {
   public shared ({ caller }) func setSeasonalThemeEnabled(enabled : Bool) : async () {
     seasonalThemeEnabled := enabled;
   };
-};
 
+  // Love Pulse
+  public shared ({ caller }) func sendLovePulse(senderName : Text) : async () {
+    let pulse : LovePulse = {
+      id = nextLovePulseId;
+      senderName;
+      timestamp = Time.now();
+    };
+    lovePulses.add(nextLovePulseId, pulse);
+    nextLovePulseId += 1;
+  };
+
+  public query ({ caller }) func getLovePulses() : async [LovePulse] {
+    let all = lovePulses.values().toArray().sort(LovePulse.compareByTimestamp);
+    if (all.size() > 20) {
+      all.sliceToArray(0, 20);
+    } else {
+      all;
+    };
+  };
+
+  // Relationship DNA
+  public query ({ caller }) func getRelationshipDNA() : async RelationshipDNA {
+    let allCheckIns = checkIns.values().toArray();
+    let totalCheckIns = allCheckIns.size();
+
+    // Count emotion frequencies
+    var happyCount = 0;
+    var lovingCount = 0;
+    var excitedCount = 0;
+    var calmCount = 0;
+    var tiredCount = 0;
+    var sadCount = 0;
+    var stressedCount = 0;
+    var gratefulCount = 0;
+
+    for (c in allCheckIns.values()) {
+      if (c.emotion == "happy") { happyCount += 1 }
+      else if (c.emotion == "loving") { lovingCount += 1 }
+      else if (c.emotion == "excited") { excitedCount += 1 }
+      else if (c.emotion == "calm") { calmCount += 1 }
+      else if (c.emotion == "tired") { tiredCount += 1 }
+      else if (c.emotion == "sad") { sadCount += 1 }
+      else if (c.emotion == "stressed") { stressedCount += 1 }
+      else if (c.emotion == "grateful") { gratefulCount += 1 };
+    };
+
+    // Build sorted top emotions (simple selection of top 3)
+    let emotionCounts : [(Text, Nat)] = [
+      ("happy", happyCount),
+      ("loving", lovingCount),
+      ("excited", excitedCount),
+      ("calm", calmCount),
+      ("grateful", gratefulCount),
+      ("tired", tiredCount),
+      ("sad", sadCount),
+      ("stressed", stressedCount),
+    ];
+
+    let sorted = emotionCounts.sort(func(a, b) { Nat.compare(b.1, a.1) });
+    let top3 = sorted.sliceToArray(0, if (sorted.size() >= 3) { 3 } else { sorted.size() });
+    let topEmotions = top3.map(func(e : (Text, Nat)) : Text { e.0 });
+
+    // Determine bond personality
+    let totalMemoriesCount = memoryVault.size();
+    let totalMessagesCount = messages.size();
+    var completedMissionsCount = 0;
+    for (m in missions.values()) {
+      if (m.isCompleted) { completedMissionsCount += 1 };
+    };
+
+    let bondPersonality = if (excitedCount + happyCount > totalCheckIns / 2 and totalMemoriesCount > 3) {
+      "Adventurous Duo"
+    } else if (lovingCount + gratefulCount > totalCheckIns / 3) {
+      "Deeply Devoted"
+    } else if (calmCount > totalCheckIns / 4 and totalMessagesCount > 10) {
+      "Cozy Homebodies"
+    } else if (completedMissionsCount > 2) {
+      "Mission Masters"
+    } else if (totalMessagesCount > 20) {
+      "Deep Connectors"
+    } else {
+      "Growing Together"
+    };
+
+    {
+      topEmotions;
+      bondPersonality;
+      totalMessages = totalMessagesCount;
+      totalMemories = totalMemoriesCount;
+      totalCheckIns;
+      completedMissions = completedMissionsCount;
+      currentStreak = streakCount;
+    };
+  };
+};
