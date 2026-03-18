@@ -153,27 +153,38 @@ actor {
     currentStreak : Nat;
   };
 
-  // Stable variables
-  var startDate : ?Int = null;
-  var nextMessageId = 0;
-  var nextMemoryId = 0;
-  var nextMissionId = 0;
-  var nextTimeCapsuleId = 0;
-  var nextAnniversaryId = 0;
-  var nextLoveLetterId = 0;
-  var nextPhotoOfDayId = 0;
-  var nextLovePulseId = 0;
-  var sharedGoal : Text = "";
-  var streakCount : Nat = 0;
-  var lastStreakDay : Int = -1;
+  // --- Stable scalar variables ---
+  stable var startDate : ?Int = null;
+  stable var nextMessageId : Nat = 0;
+  stable var nextMemoryId : Nat = 0;
+  stable var nextMissionId : Nat = 0;
+  stable var nextTimeCapsuleId : Nat = 0;
+  stable var nextAnniversaryId : Nat = 0;
+  stable var nextLoveLetterId : Nat = 0;
+  stable var nextPhotoOfDayId : Nat = 0;
+  stable var nextLovePulseId : Nat = 0;
+  stable var sharedGoal : Text = "";
+  stable var streakCount : Nat = 0;
+  stable var lastStreakDay : Int = -1;
+  stable var relationshipLevel : Nat = 1;
+  stable var coachTipSeed : Nat = 0;
+  stable var conversationStarterSeed : Nat = 0;
+  stable var seasonalThemeEnabled : Bool = true;
 
-  // New feature variables
-  var relationshipLevel : Nat = 1;
-  var coachTipSeed : Nat = 0;
-  var conversationStarterSeed : Nat = 0;
-  var seasonalThemeEnabled : Bool = true;
+  // --- Stable backup arrays for Maps/Lists ---
+  stable var stableMessages : [(Nat, ChatMessage)] = [];
+  stable var stableMemoryVault : [(Nat, MemoryVaultEntry)] = [];
+  stable var stableCheckIns : [(Int, CheckIn)] = [];
+  stable var stableMissions : [(Nat, CoupleMission)] = [];
+  stable var stableTimeCapsules : [(Nat, TimeCapsuleMessage)] = [];
+  stable var stableAnniversaries : [(Nat, Anniversary)] = [];
+  stable var stableQuizAnswers : [QuizAnswer] = [];
+  stable var stableLoveLetters : [(Nat, LoveLetter)] = [];
+  stable var stablePhotosOfDay : [(Nat, PhotoOfDay)] = [];
+  stable var stableChallenges : [(Nat, CoupleChallenge)] = [];
+  stable var stableLovePulses : [(Nat, LovePulse)] = [];
 
-  // Data Stores
+  // --- In-memory working Maps ---
   let messages = Map.empty<Nat, ChatMessage>();
   let memoryVault = Map.empty<Nat, MemoryVaultEntry>();
   let checkIns = Map.empty<Int, CheckIn>();
@@ -185,6 +196,51 @@ actor {
   let photosOfDay = Map.empty<Nat, PhotoOfDay>();
   let challenges = Map.empty<Nat, CoupleChallenge>();
   let lovePulses = Map.empty<Nat, LovePulse>();
+
+  // --- Upgrade hooks ---
+  system func preupgrade() {
+    stableMessages := messages.entries().toArray();
+    stableMemoryVault := memoryVault.entries().toArray();
+    stableCheckIns := checkIns.entries().toArray();
+    stableMissions := missions.entries().toArray();
+    stableTimeCapsules := timeCapsules.entries().toArray();
+    stableAnniversaries := anniversaries.entries().toArray();
+    stableQuizAnswers := quizAnswers.toArray();
+    stableLoveLetters := loveLetters.entries().toArray();
+    stablePhotosOfDay := photosOfDay.entries().toArray();
+    stableChallenges := challenges.entries().toArray();
+    stableLovePulses := lovePulses.entries().toArray();
+  };
+
+  system func postupgrade() {
+    for ((k, v) in stableMessages.values()) { messages.add(k, v) };
+    for ((k, v) in stableMemoryVault.values()) { memoryVault.add(k, v) };
+    for ((k, v) in stableCheckIns.values()) { checkIns.add(k, v) };
+    for ((k, v) in stableMissions.values()) { missions.add(k, v) };
+    for ((k, v) in stableTimeCapsules.values()) { timeCapsules.add(k, v) };
+    for ((k, v) in stableAnniversaries.values()) { anniversaries.add(k, v) };
+    for (v in stableQuizAnswers.values()) { quizAnswers.add(v) };
+    for ((k, v) in stableLoveLetters.values()) { loveLetters.add(k, v) };
+    for ((k, v) in stablePhotosOfDay.values()) { photosOfDay.add(k, v) };
+    for ((k, v) in stableChallenges.values()) { challenges.add(k, v) };
+    for ((k, v) in stableLovePulses.values()) { lovePulses.add(k, v) };
+    // Free stable memory after restore
+    stableMessages := [];
+    stableMemoryVault := [];
+    stableCheckIns := [];
+    stableMissions := [];
+    stableTimeCapsules := [];
+    stableAnniversaries := [];
+    stableQuizAnswers := [];
+    stableLoveLetters := [];
+    stablePhotosOfDay := [];
+    stableChallenges := [];
+    stableLovePulses := [];
+    // Re-init challenges if empty
+    if (challenges.isEmpty()) {
+      initChallenges();
+    };
+  };
 
   let dailyPrompts : [Text] = [
     "Share a favorite memory from your relationship.",
@@ -201,7 +257,7 @@ actor {
     "Write a list of things you appreciate about your partner.",
     "Share your favorite tradition as a couple.",
     "Describe your first impression of each other.",
-    "Share a challenge you`ve overcome together.",
+    "Share a challenge you've overcome together.",
     "Write a list of places you want to visit together.",
     "Share your favorite meal together.",
     "Describe a perfect day spent together.",
@@ -212,7 +268,7 @@ actor {
     "Share a quote that represents your relationship.",
     "Write a list of surprises you want to do for your partner.",
     "Share your favorite way to spend time together.",
-    "Describe a difficult moment you`ve overcome as a couple.",
+    "Describe a difficult moment you've overcome as a couple.",
     "Share a book or story you want to read together.",
     "Write a list of things you want to try together.",
     "Share a message to your future selves.",
@@ -245,7 +301,6 @@ actor {
     "What's a challenge you want to overcome together?",
   ];
 
-  // Relationship levels and XP thresholds
   let levelThresholds = [
     (1, 0),
     (2, 500),
@@ -264,9 +319,8 @@ actor {
     (15, 52500),
   ];
 
-  // Initialize default weekly challenges
   func initChallenges() {
-    if (challenges.size() == 0) {
+    if (challenges.isEmpty()) {
       let defaultChallenges : [(Nat, Text, Text, Nat)] = [
         (0, "Sweet Messages", "Send 5 sweet messages to each other this week", 5),
         (1, "Memory Makers", "Add 2 new memories to your vault this week", 2),
@@ -289,6 +343,9 @@ actor {
       };
     };
   };
+
+  // Initialize challenges on first deploy
+  do { initChallenges() };
 
   // 1. Core functionality
   public shared ({ caller }) func setStartDate(timestamp : Int) : async () {
@@ -335,7 +392,7 @@ actor {
     let message : ChatMessage = {
       id = nextMessageId;
       senderName;
-      content = ""; // No text content for voice notes
+      content = "";
       timestamp = Time.now();
       reactions = [];
       voiceBlob = ?voiceBlob;
@@ -449,7 +506,6 @@ actor {
     };
     checkIns.add(now, checkIn);
 
-    // Update streak
     let todayDay = now / (24 * 60 * 60 * 1000000000);
     if (lastStreakDay == todayDay) {
       // same day, no change
@@ -596,7 +652,7 @@ actor {
   };
 
   public query ({ caller }) func getAllGalaxyItems() : async GalaxyCounts {
-    let memories = memoryVault.size();
+    let memoriesCount = memoryVault.size();
     var completedMissions = 0;
     for (mission in missions.values()) {
       if (mission.isCompleted) {
@@ -606,7 +662,7 @@ actor {
     let loveLetterCount = loveLetters.size();
     let anniversaryCount = anniversaries.size();
     {
-      memories;
+      memories = memoriesCount;
       completedMissions;
       loveLetters = loveLetterCount;
       anniversaries = anniversaryCount;
@@ -745,8 +801,7 @@ actor {
     };
   };
 
-  // 2. New Features
-
+  // Relationship Level
   public query ({ caller }) func getRelationshipLevel() : async Nat {
     relationshipLevel;
   };
@@ -836,7 +891,6 @@ actor {
     let allCheckIns = checkIns.values().toArray();
     let totalCheckIns = allCheckIns.size();
 
-    // Count emotion frequencies
     var happyCount = 0;
     var lovingCount = 0;
     var excitedCount = 0;
@@ -857,7 +911,6 @@ actor {
       else if (c.emotion == "grateful") { gratefulCount += 1 };
     };
 
-    // Build sorted top emotions (simple selection of top 3)
     let emotionCounts : [(Text, Nat)] = [
       ("happy", happyCount),
       ("loving", lovingCount),
@@ -873,7 +926,6 @@ actor {
     let top3 = sorted.sliceToArray(0, if (sorted.size() >= 3) { 3 } else { sorted.size() });
     let topEmotions = top3.map(func(e : (Text, Nat)) : Text { e.0 });
 
-    // Determine bond personality
     let totalMemoriesCount = memoryVault.size();
     let totalMessagesCount = messages.size();
     var completedMissionsCount = 0;

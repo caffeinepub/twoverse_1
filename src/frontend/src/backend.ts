@@ -239,6 +239,9 @@ export interface backendInterface {
     removeAnniversary(id: bigint): Promise<void>;
     removeReaction(messageId: bigint, emoji: string): Promise<void>;
     resetWeeklyChallenges(): Promise<void>;
+    getLovePulses(): Promise<Array<LovePulse>>;
+    getRelationshipDNA(): Promise<RelationshipDNA>;
+    sendLovePulse(senderName: string): Promise<void>;
     sendMessage(senderName: string, content: string): Promise<void>;
     sendVoiceNote(senderName: string, voiceBlob: ExternalBlob): Promise<void>;
     setCoachTipSeed(seed: bigint): Promise<void>;
@@ -250,6 +253,7 @@ export interface backendInterface {
     updateRelationshipLevel(newLevel: bigint): Promise<void>;
 }
 import type { ChatMessage as _ChatMessage, CheckIn as _CheckIn, EmojiReaction as _EmojiReaction, ExternalBlob as _ExternalBlob, MemoryVaultEntry as _MemoryVaultEntry, PhotoOfDay as _PhotoOfDay, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { LovePulse as _LovePulse, RelationshipDNA as _RelationshipDNA } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -980,6 +984,49 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getLovePulses(): Promise<Array<LovePulse>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getLovePulses();
+                return result as Array<LovePulse>;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getLovePulses();
+            return result as Array<LovePulse>;
+        }
+    }
+    async getRelationshipDNA(): Promise<RelationshipDNA> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getRelationshipDNA();
+                return result as RelationshipDNA;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getRelationshipDNA();
+            return result as RelationshipDNA;
+        }
+    }
+    async sendLovePulse(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.sendLovePulse(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.sendLovePulse(arg0);
+            return result;
+        }
+    }
+
     async setCoachTipSeed(arg0: bigint): Promise<void> {
         if (this.processError) {
             try {

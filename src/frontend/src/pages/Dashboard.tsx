@@ -209,10 +209,10 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       >
         <div className="flex items-center justify-center gap-2">
           <img
-            src="/assets/uploads/Picsart_26-03-18_07-07-49-444-1.png"
+            src="/assets/generated/twoverse-logo-new-transparent.dim_400x400.png"
             alt="TwoVerse"
-            className="w-8 h-8 object-contain rounded-lg"
-            style={{ filter: "brightness(0) invert(1)" }}
+            className="w-9 h-9 object-contain"
+            style={{ filter: "drop-shadow(0 0 6px rgba(200,100,255,0.7))" }}
           />
           <p
             className="text-sm font-medium tracking-widest uppercase mb-0"

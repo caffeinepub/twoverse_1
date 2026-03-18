@@ -745,8 +745,10 @@ export function useSendLovePulse() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ senderName }: { senderName: string }) => {
-      if (!actor) throw new Error("Actor not ready");
-      return (actor as any).sendLovePulse(senderName) as Promise<void>;
+      // Get fresh actor from cache to avoid stale closure
+      const freshActor = actor ?? (qc.getQueryData(["actor"]) as typeof actor);
+      if (!freshActor) throw new Error("Actor not ready");
+      return freshActor.sendLovePulse(senderName);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lovePulses"] }),
   });

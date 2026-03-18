@@ -136,12 +136,11 @@ export default function IntroScreen({ onDone }: IntroScreenProps) {
               className="z-10 relative"
             >
               <img
-                src="/assets/uploads/Picsart_26-03-18_07-07-49-444-1.png"
+                src="/assets/generated/twoverse-logo-new-transparent.dim_400x400.png"
                 alt="TwoVerse Logo"
-                className="w-48 h-48 object-contain rounded-3xl"
+                className="w-52 h-52 object-contain"
                 style={{
                   filter: logoShadow,
-                  mixBlendMode: "multiply",
                 }}
               />
             </motion.div>
