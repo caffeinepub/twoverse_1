@@ -22,6 +22,7 @@ export interface ChatMessage {
   'timestamp' : bigint,
   'senderName' : string,
   'reactions' : Array<EmojiReaction>,
+  'voiceBlob' : [] | [ExternalBlob],
 }
 export interface CheckIn {
   'emotion' : string,
@@ -47,6 +48,12 @@ export interface CoupleMission {
 }
 export interface EmojiReaction { 'count' : bigint, 'emoji' : string }
 export type ExternalBlob = Uint8Array;
+export interface GalaxyCounts {
+  'loveLetters' : bigint,
+  'anniversaries' : bigint,
+  'completedMissions' : bigint,
+  'memories' : bigint,
+}
 export interface LoveLetter {
   'id' : bigint,
   'title' : string,
@@ -131,6 +138,7 @@ export interface _SERVICE {
   'deletePhotoOfDay' : ActorMethod<[bigint], boolean>,
   'getAllAnniversaries' : ActorMethod<[], Array<Anniversary>>,
   'getAllCheckIns' : ActorMethod<[], Array<CheckIn>>,
+  'getAllGalaxyItems' : ActorMethod<[], GalaxyCounts>,
   'getAllLoveLetters' : ActorMethod<[], Array<LoveLetter>>,
   'getAllMemories' : ActorMethod<[], Array<MemoryVaultEntry>>,
   'getAllMessages' : ActorMethod<[], Array<ChatMessage>>,
@@ -163,6 +171,7 @@ export interface _SERVICE {
   'removeReaction' : ActorMethod<[bigint, string], undefined>,
   'resetWeeklyChallenges' : ActorMethod<[], undefined>,
   'sendMessage' : ActorMethod<[string, string], undefined>,
+  'sendVoiceNote' : ActorMethod<[string, ExternalBlob], undefined>,
   'setCoachTipSeed' : ActorMethod<[bigint], undefined>,
   'setConversationStarterSeed' : ActorMethod<[bigint], undefined>,
   'setSeasonalThemeEnabled' : ActorMethod<[boolean], undefined>,

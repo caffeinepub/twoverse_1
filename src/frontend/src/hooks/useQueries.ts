@@ -670,3 +670,41 @@ export function useSetConversationStarterSeed() {
       qc.invalidateQueries({ queryKey: ["conversationStarterSeed"] }),
   });
 }
+
+// ---- Version 9B-2a ----
+
+export function useGetAllGalaxyItems() {
+  const { actor, isFetching } = useActor();
+  return useQuery({
+    queryKey: ["galaxyItems"],
+    queryFn: async () => {
+      if (!actor)
+        return {
+          memories: 0n,
+          completedMissions: 0n,
+          loveLetters: 0n,
+          anniversaries: 0n,
+        };
+      return actor.getAllGalaxyItems();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useSendVoiceNote() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      senderName,
+      audioBytes,
+    }: { senderName: string; audioBytes: Uint8Array }) => {
+      if (!actor) throw new Error("Actor not ready");
+      const voiceBlob = ExternalBlob.fromBytes(
+        audioBytes as Uint8Array<ArrayBuffer>,
+      );
+      return actor.sendVoiceNote(senderName, voiceBlob);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["messages"] }),
+  });
+}

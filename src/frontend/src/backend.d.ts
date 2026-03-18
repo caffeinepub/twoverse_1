@@ -50,6 +50,12 @@ export interface LoveLetter {
     createdAt: bigint;
     authorName: string;
 }
+export interface GalaxyCounts {
+    loveLetters: bigint;
+    anniversaries: bigint;
+    completedMissions: bigint;
+    memories: bigint;
+}
 export interface TimeCapsuleMessage {
     id: bigint;
     content: string;
@@ -94,6 +100,7 @@ export interface ChatMessage {
     timestamp: bigint;
     senderName: string;
     reactions: Array<EmojiReaction>;
+    voiceBlob?: ExternalBlob;
 }
 export interface backendInterface {
     addAnniversary(title: string, date: bigint, emoji: string): Promise<void>;
@@ -111,6 +118,7 @@ export interface backendInterface {
     deletePhotoOfDay(id: bigint): Promise<boolean>;
     getAllAnniversaries(): Promise<Array<Anniversary>>;
     getAllCheckIns(): Promise<Array<CheckIn>>;
+    getAllGalaxyItems(): Promise<GalaxyCounts>;
     getAllLoveLetters(): Promise<Array<LoveLetter>>;
     getAllMemories(): Promise<Array<MemoryVaultEntry>>;
     getAllMessages(): Promise<Array<ChatMessage>>;
@@ -140,6 +148,7 @@ export interface backendInterface {
     removeReaction(messageId: bigint, emoji: string): Promise<void>;
     resetWeeklyChallenges(): Promise<void>;
     sendMessage(senderName: string, content: string): Promise<void>;
+    sendVoiceNote(senderName: string, voiceBlob: ExternalBlob): Promise<void>;
     setCoachTipSeed(seed: bigint): Promise<void>;
     setConversationStarterSeed(seed: bigint): Promise<void>;
     setSeasonalThemeEnabled(enabled: boolean): Promise<void>;

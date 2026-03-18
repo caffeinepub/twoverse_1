@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Send, X } from "lucide-react";
+import { Mic, MicOff, Send, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import {
   useGetAllMessages,
   useRemoveReaction,
   useSendMessage,
+  useSendVoiceNote,
 } from "../hooks/useQueries";
 
 const REACTION_EMOJIS = ["❤️", "😂", "😮", "😢", "👏", "🔥"];
@@ -62,6 +63,60 @@ interface ReplyTo {
   content: string;
 }
 
+function VoiceMessagePlayer({ voiceBlob }: { voiceBlob: any }) {
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let url: string | null = null;
+    const load = async () => {
+      try {
+        // Try getDirectURL first
+        if (typeof voiceBlob.getDirectURL === "function") {
+          url = voiceBlob.getDirectURL();
+          setAudioUrl(url);
+        } else if (typeof voiceBlob.getBytes === "function") {
+          const bytes = await voiceBlob.getBytes();
+          const blob = new Blob([bytes], { type: "audio/webm" });
+          url = URL.createObjectURL(blob);
+          setAudioUrl(url);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    load();
+    return () => {
+      if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+    };
+  }, [voiceBlob]);
+
+  if (!audioUrl) {
+    return (
+      <div className="flex items-center gap-2 px-1 py-1">
+        <Mic className="w-4 h-4 opacity-60" />
+        <span className="text-xs opacity-60">Loading voice note...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 py-1">
+      <Mic
+        className="w-4 h-4 shrink-0"
+        style={{ color: "rgba(255,180,200,0.9)" }}
+      />
+      <audio
+        src={audioUrl}
+        controls
+        className="h-8 max-w-[180px]"
+        style={{ filter: "invert(1) opacity(0.85)" }}
+      >
+        <track kind="captions" />
+      </audio>
+    </div>
+  );
+}
+
 export default function Chat() {
   const [displayName, setDisplayName] = useState<string>(
     () => localStorage.getItem("twoverse_display_name") || "",
@@ -84,8 +139,16 @@ export default function Chat() {
   const [swipingId, setSwipingId] = useState<bigint | null>(null);
   const [swipeOffsets, setSwipeOffsets] = useState<Record<string, number>>({});
 
+  // Voice recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const { data: messages = [], isLoading } = useGetAllMessages();
   const sendMessage = useSendMessage();
+  const sendVoiceNote = useSendVoiceNote();
   const addReaction = useAddReaction();
   const removeReaction = useRemoveReaction();
   const deleteMessage = useDeleteMessage();
@@ -124,6 +187,68 @@ export default function Chat() {
         onError: () => toast.error("Couldn't send message"),
       },
     );
+  };
+
+  const startRecording = async () => {
+    if (!displayName) {
+      toast.error("Set your name first");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "audio/ogg";
+      const recorder = new MediaRecorder(stream, { mimeType });
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      recorder.start(100);
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+      setRecordingSeconds(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingSeconds((s) => s + 1);
+      }, 1000);
+    } catch {
+      toast.error("Microphone access denied");
+    }
+  };
+
+  const stopRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") return;
+
+    recorder.onstop = async () => {
+      const mimeType = recorder.mimeType || "audio/webm";
+      const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+      // Stop all tracks
+      for (const t of recorder.stream.getTracks()) t.stop();
+
+      if (audioBlob.size < 1000) {
+        toast.error("Recording too short");
+        return;
+      }
+
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const audioBytes = new Uint8Array(arrayBuffer);
+
+      sendVoiceNote.mutate(
+        { senderName: displayName, audioBytes },
+        {
+          onSuccess: () => {
+            setShowSparkle(true);
+            setTimeout(() => setShowSparkle(false), 700);
+          },
+          onError: () => toast.error("Couldn't send voice note"),
+        },
+      );
+    };
+
+    recorder.stop();
+    setIsRecording(false);
+    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
   };
 
   const handleReaction = (msgId: bigint, emoji: string) => {
@@ -211,6 +336,12 @@ export default function Chat() {
     swipeMsgIdRef.current = null;
   };
 
+  const formatRecordingTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
   return (
     <div className="relative z-10 flex flex-col h-[calc(100dvh-80px)]">
       {/* Header */}
@@ -291,6 +422,7 @@ export default function Chat() {
             const isPickerOpen = pickerForMessage === msg.id;
             const isActionOpen = longPressMessageId === msg.id;
             const swipeOffset = swipeOffsets[msg.id.toString()] ?? 0;
+            const hasVoice = !!msg.voiceBlob;
             return (
               <motion.div
                 key={msg.id.toString()}
@@ -357,12 +489,16 @@ export default function Chat() {
                           }),
                     }}
                   >
-                    <p
-                      className="text-sm leading-relaxed break-words whitespace-pre-line"
-                      style={{ color: "rgba(255,255,255,0.95)" }}
-                    >
-                      {msg.content}
-                    </p>
+                    {hasVoice ? (
+                      <VoiceMessagePlayer voiceBlob={msg.voiceBlob} />
+                    ) : (
+                      <p
+                        className="text-sm leading-relaxed break-words whitespace-pre-line"
+                        style={{ color: "rgba(255,255,255,0.95)" }}
+                      >
+                        {msg.content}
+                      </p>
+                    )}
                     <p
                       className="text-[10px] mt-1"
                       style={{ color: "rgba(255,255,255,0.55)" }}
@@ -527,6 +663,41 @@ export default function Chat() {
         )}
       </AnimatePresence>
 
+      {/* Recording indicator */}
+      <AnimatePresence>
+        {isRecording && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="px-4 py-2.5 flex items-center gap-3"
+            style={{
+              background: "rgba(180,20,40,0.35)",
+              backdropFilter: "blur(10px)",
+              borderTop: "1px solid rgba(255,80,80,0.25)",
+            }}
+          >
+            <motion.div
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1 }}
+              className="w-3 h-3 rounded-full bg-red-400"
+            />
+            <span
+              className="text-sm font-medium"
+              style={{ color: "rgba(255,160,160,0.95)" }}
+            >
+              Recording {formatRecordingTime(recordingSeconds)}
+            </span>
+            <span
+              className="text-xs ml-auto"
+              style={{ color: "rgba(255,255,255,0.55)" }}
+            >
+              Release to send
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Input */}
       <div
         className="px-4 py-3 border-t"
@@ -550,25 +721,70 @@ export default function Chat() {
             placeholder={
               replyTo
                 ? `Replying to ${replyTo.senderName}... 💕`
-                : "Type a message... 💕"
+                : isRecording
+                  ? "Recording... 🎙️"
+                  : "Type a message... 💕"
             }
             className="flex-1 rounded-2xl text-sm"
             style={{
               background: "rgba(255,255,255,0.15)",
-              borderColor: replyTo
-                ? "rgba(255,200,200,0.40)"
-                : "rgba(255,255,255,0.25)",
+              borderColor: isRecording
+                ? "rgba(255,80,80,0.50)"
+                : replyTo
+                  ? "rgba(255,200,200,0.40)"
+                  : "rgba(255,255,255,0.25)",
               color: "rgba(255,255,255,0.95)",
             }}
-            disabled={!displayName || sendMessage.isPending}
+            disabled={!displayName || sendMessage.isPending || isRecording}
           />
+          {/* Mic button */}
+          <Button
+            data-ocid="chat.toggle"
+            size="icon"
+            variant={isRecording ? "destructive" : "outline"}
+            className="rounded-2xl shrink-0 select-none"
+            style={{
+              background: isRecording
+                ? "rgba(220,40,40,0.75)"
+                : "rgba(255,255,255,0.15)",
+              borderColor: isRecording
+                ? "rgba(255,80,80,0.50)"
+                : "rgba(255,255,255,0.25)",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+            }}
+            onMouseDown={() => startRecording()}
+            onMouseUp={() => stopRecording()}
+            onMouseLeave={() => isRecording && stopRecording()}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              startRecording();
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              stopRecording();
+            }}
+            disabled={!displayName || sendMessage.isPending}
+          >
+            {isRecording ? (
+              <MicOff className="h-4 w-4" style={{ color: "white" }} />
+            ) : (
+              <Mic
+                className="h-4 w-4"
+                style={{ color: "rgba(255,255,255,0.80)" }}
+              />
+            )}
+          </Button>
           <div className="relative">
             <Button
               data-ocid="chat.send_button"
               size="icon"
               onClick={handleSend}
               disabled={
-                !message.trim() || !displayName || sendMessage.isPending
+                !message.trim() ||
+                !displayName ||
+                sendMessage.isPending ||
+                isRecording
               }
               className="rounded-2xl shrink-0"
             >

@@ -31,6 +31,12 @@ export const CheckIn = IDL.Record({
   'note' : IDL.Opt(IDL.Text),
   'timestamp' : IDL.Int,
 });
+export const GalaxyCounts = IDL.Record({
+  'loveLetters' : IDL.Nat,
+  'anniversaries' : IDL.Nat,
+  'completedMissions' : IDL.Nat,
+  'memories' : IDL.Nat,
+});
 export const LoveLetter = IDL.Record({
   'id' : IDL.Nat,
   'title' : IDL.Text,
@@ -55,6 +61,7 @@ export const ChatMessage = IDL.Record({
   'timestamp' : IDL.Int,
   'senderName' : IDL.Text,
   'reactions' : IDL.Vec(EmojiReaction),
+  'voiceBlob' : IDL.Opt(ExternalBlob),
 });
 export const CoupleMission = IDL.Record({
   'id' : IDL.Nat,
@@ -144,6 +151,7 @@ export const idlService = IDL.Service({
   'deletePhotoOfDay' : IDL.Func([IDL.Nat], [IDL.Bool], []),
   'getAllAnniversaries' : IDL.Func([], [IDL.Vec(Anniversary)], ['query']),
   'getAllCheckIns' : IDL.Func([], [IDL.Vec(CheckIn)], ['query']),
+  'getAllGalaxyItems' : IDL.Func([], [GalaxyCounts], ['query']),
   'getAllLoveLetters' : IDL.Func([], [IDL.Vec(LoveLetter)], ['query']),
   'getAllMemories' : IDL.Func([], [IDL.Vec(MemoryVaultEntry)], ['query']),
   'getAllMessages' : IDL.Func([], [IDL.Vec(ChatMessage)], ['query']),
@@ -185,6 +193,7 @@ export const idlService = IDL.Service({
   'removeReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'resetWeeklyChallenges' : IDL.Func([], [], []),
   'sendMessage' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'sendVoiceNote' : IDL.Func([IDL.Text, ExternalBlob], [], []),
   'setCoachTipSeed' : IDL.Func([IDL.Nat], [], []),
   'setConversationStarterSeed' : IDL.Func([IDL.Nat], [], []),
   'setSeasonalThemeEnabled' : IDL.Func([IDL.Bool], [], []),
@@ -220,6 +229,12 @@ export const idlFactory = ({ IDL }) => {
     'note' : IDL.Opt(IDL.Text),
     'timestamp' : IDL.Int,
   });
+  const GalaxyCounts = IDL.Record({
+    'loveLetters' : IDL.Nat,
+    'anniversaries' : IDL.Nat,
+    'completedMissions' : IDL.Nat,
+    'memories' : IDL.Nat,
+  });
   const LoveLetter = IDL.Record({
     'id' : IDL.Nat,
     'title' : IDL.Text,
@@ -241,6 +256,7 @@ export const idlFactory = ({ IDL }) => {
     'timestamp' : IDL.Int,
     'senderName' : IDL.Text,
     'reactions' : IDL.Vec(EmojiReaction),
+    'voiceBlob' : IDL.Opt(ExternalBlob),
   });
   const CoupleMission = IDL.Record({
     'id' : IDL.Nat,
@@ -330,6 +346,7 @@ export const idlFactory = ({ IDL }) => {
     'deletePhotoOfDay' : IDL.Func([IDL.Nat], [IDL.Bool], []),
     'getAllAnniversaries' : IDL.Func([], [IDL.Vec(Anniversary)], ['query']),
     'getAllCheckIns' : IDL.Func([], [IDL.Vec(CheckIn)], ['query']),
+    'getAllGalaxyItems' : IDL.Func([], [GalaxyCounts], ['query']),
     'getAllLoveLetters' : IDL.Func([], [IDL.Vec(LoveLetter)], ['query']),
     'getAllMemories' : IDL.Func([], [IDL.Vec(MemoryVaultEntry)], ['query']),
     'getAllMessages' : IDL.Func([], [IDL.Vec(ChatMessage)], ['query']),
@@ -371,6 +388,7 @@ export const idlFactory = ({ IDL }) => {
     'removeReaction' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'resetWeeklyChallenges' : IDL.Func([], [], []),
     'sendMessage' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'sendVoiceNote' : IDL.Func([IDL.Text, ExternalBlob], [], []),
     'setCoachTipSeed' : IDL.Func([IDL.Nat], [], []),
     'setConversationStarterSeed' : IDL.Func([IDL.Nat], [], []),
     'setSeasonalThemeEnabled' : IDL.Func([IDL.Bool], [], []),

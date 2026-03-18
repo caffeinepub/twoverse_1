@@ -1,4 +1,4 @@
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
 
@@ -17,7 +17,8 @@ type Page =
   | "photoofday"
   | "challenges"
   | "aicoach"
-  | "starters";
+  | "starters"
+  | "universe";
 
 interface BottomNavProps {
   activePage: Page;
@@ -49,10 +50,10 @@ const navItems: {
     ocid: "nav.memory_link",
   },
   {
-    page: "settings",
-    icon: <span className="text-xl">⚙️</span>,
-    label: "Settings",
-    ocid: "nav.settings_link",
+    page: "universe",
+    icon: <Sparkles className="w-5 h-5" />,
+    label: "Universe",
+    ocid: "nav.universe_link",
   },
   {
     page: "more",
@@ -66,7 +67,7 @@ const TOP_LEVEL_PAGES: Page[] = [
   "dashboard",
   "chat",
   "memories",
-  "settings",
+  "universe",
   "more",
 ];
 

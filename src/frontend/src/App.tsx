@@ -13,6 +13,7 @@ import Chat from "./pages/Chat";
 import ConversationStarters from "./pages/ConversationStarters";
 import CoupleChallenges from "./pages/CoupleChallenges";
 import CoupleQuiz from "./pages/CoupleQuiz";
+import CouplesUniverse from "./pages/CouplesUniverse";
 import Dashboard from "./pages/Dashboard";
 import LoveLetters from "./pages/LoveLetters";
 import MemoryVault from "./pages/MemoryVault";
@@ -46,7 +47,8 @@ export type Page =
   | "photoofday"
   | "challenges"
   | "aicoach"
-  | "starters";
+  | "starters"
+  | "universe";
 
 function AppInner() {
   const [page, setPage] = useState<Page>("dashboard");
@@ -76,6 +78,7 @@ function AppInner() {
     challenges: <CoupleChallenges onBack={() => setPage("more")} />,
     aicoach: <AICoach onBack={() => setPage("more")} />,
     starters: <ConversationStarters onBack={() => setPage("more")} />,
+    universe: <CouplesUniverse />,
   };
 
   return (

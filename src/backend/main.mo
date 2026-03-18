@@ -9,7 +9,9 @@ import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -48,6 +50,7 @@ actor {
     content : Text;
     timestamp : Int;
     reactions : [EmojiReaction];
+    voiceBlob : ?Storage.ExternalBlob;
   };
 
   type MemoryVaultEntry = {
@@ -121,6 +124,13 @@ actor {
     isCompleted : Bool;
   };
 
+  type GalaxyCounts = {
+    memories : Nat;
+    completedMissions : Nat;
+    loveLetters : Nat;
+    anniversaries : Nat;
+  };
+
   // Stable variables
   var startDate : ?Int = null;
   var nextMessageId = 0;
@@ -167,7 +177,7 @@ actor {
     "Write a list of things you appreciate about your partner.",
     "Share your favorite tradition as a couple.",
     "Describe your first impression of each other.",
-    "Share a challenge you've overcome together.",
+    "Share a challenge you`ve overcome together.",
     "Write a list of places you want to visit together.",
     "Share your favorite meal together.",
     "Describe a perfect day spent together.",
@@ -178,7 +188,7 @@ actor {
     "Share a quote that represents your relationship.",
     "Write a list of surprises you want to do for your partner.",
     "Share your favorite way to spend time together.",
-    "Describe a difficult moment you've overcome as a couple.",
+    "Describe a difficult moment you`ve overcome as a couple.",
     "Share a book or story you want to read together.",
     "Write a list of things you want to try together.",
     "Share a message to your future selves.",
@@ -291,6 +301,20 @@ actor {
       content;
       timestamp = Time.now();
       reactions = [];
+      voiceBlob = null;
+    };
+    messages.add(nextMessageId, message);
+    nextMessageId += 1;
+  };
+
+  public shared ({ caller }) func sendVoiceNote(senderName : Text, voiceBlob : Storage.ExternalBlob) : async () {
+    let message : ChatMessage = {
+      id = nextMessageId;
+      senderName;
+      content = ""; // No text content for voice notes
+      timestamp = Time.now();
+      reactions = [];
+      voiceBlob = ?voiceBlob;
     };
     messages.add(nextMessageId, message);
     nextMessageId += 1;
@@ -341,6 +365,7 @@ actor {
           content = message.content;
           timestamp = message.timestamp;
           reactions = updatedReactions;
+          voiceBlob = message.voiceBlob;
         };
         messages.add(messageId, updatedMessage);
       };
@@ -358,6 +383,7 @@ actor {
           content = message.content;
           timestamp = message.timestamp;
           reactions = updatedReactions;
+          voiceBlob = message.voiceBlob;
         };
         messages.add(messageId, updatedMessage);
       };
@@ -545,6 +571,24 @@ actor {
     anniversaries.values().toArray();
   };
 
+  public query ({ caller }) func getAllGalaxyItems() : async GalaxyCounts {
+    let memories = memoryVault.size();
+    var completedMissions = 0;
+    for (mission in missions.values()) {
+      if (mission.isCompleted) {
+        completedMissions += 1;
+      };
+    };
+    let loveLetterCount = loveLetters.size();
+    let anniversaryCount = anniversaries.size();
+    {
+      memories;
+      completedMissions;
+      loveLetters = loveLetterCount;
+      anniversaries = anniversaryCount;
+    };
+  };
+
   public shared ({ caller }) func removeAnniversary(id : Nat) : async () {
     anniversaries.remove(id);
   };
@@ -712,7 +756,6 @@ actor {
     let currentTime = Time.now();
     let sevenDaysInTicks : Int = 7 * 24 * 60 * 60 * 1000000000;
 
-    // Find checks from the last 7 days (up to 5 latest)
     let recentChecks = checkIns.values().toArray().reverse().filter(
       func(check) {
         currentTime - check.timestamp <= sevenDaysInTicks;
@@ -744,3 +787,4 @@ actor {
     seasonalThemeEnabled := enabled;
   };
 };
+
