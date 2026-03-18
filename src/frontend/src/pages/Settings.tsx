@@ -55,9 +55,10 @@ export default function Settings() {
     resolvedFontColor,
     dayNightMode,
     setDayNightMode,
+    setSeasonalEnabled: contextSetSeasonal,
   } = useTheme();
   const { data: seasonalEnabled } = useGetSeasonalThemeEnabled();
-  const setSeasonalEnabled = useSetSeasonalThemeEnabled();
+  const setSeasonalMutation = useSetSeasonalThemeEnabled();
   const [dateInput, setDateInput] = useState("");
   const [fontsLoaded, setFontsLoaded] = useState<Set<string>>(new Set());
 
@@ -559,8 +560,8 @@ export default function Settings() {
             data-ocid="settings.seasonal_toggle"
             onClick={() => {
               const next = !(seasonalEnabled ?? false);
-              localStorage.setItem("twoverse_seasonal_theme", String(next));
-              setSeasonalEnabled.mutate(next);
+              contextSetSeasonal(next);
+              setSeasonalMutation.mutate(next);
             }}
             className="w-12 h-6 rounded-full relative transition-all border"
             style={{

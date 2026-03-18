@@ -14,6 +14,7 @@ export function useGetDaysTogether() {
     },
     enabled: !!actor && !isFetching,
     refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
 }
 

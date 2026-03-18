@@ -195,6 +195,8 @@ interface ThemeContextValue {
   dayNightMode: DayNightMode;
   setDayNightMode: (m: DayNightMode) => void;
   isNightMode: boolean;
+  seasonalEnabled: boolean;
+  setSeasonalEnabled: (val: boolean) => void;
 }
 
 const defaultTheme = THEMES[0];
@@ -232,6 +234,8 @@ const ThemeContext = createContext<ThemeContextValue>({
   dayNightMode: "auto",
   setDayNightMode: () => {},
   isNightMode: false,
+  seasonalEnabled: false,
+  setSeasonalEnabled: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -312,9 +316,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [dayNightMode]);
 
-  // Read seasonal enabled from localStorage for sync access
-  const seasonalEnabled =
-    localStorage.getItem("twoverse_seasonal_theme") === "true";
+  const [seasonalEnabled, setSeasonalEnabledState] = useState<boolean>(
+    () => localStorage.getItem("twoverse_seasonal_theme") === "true",
+  );
+
+  const setSeasonalEnabled = (val: boolean) => {
+    setSeasonalEnabledState(val);
+    localStorage.setItem("twoverse_seasonal_theme", String(val));
+  };
+
   const effectiveThemeId: ThemeId = seasonalEnabled
     ? getSeasonalThemeId()
     : theme;
@@ -342,6 +352,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         dayNightMode,
         setDayNightMode,
         isNightMode,
+        seasonalEnabled,
+        setSeasonalEnabled,
       }}
     >
       {children}

@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Calendar, Heart, Palette, Trophy, User } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -88,6 +89,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const addCheckIn = useAddCheckIn();
   const { data: moodAlert } = useGetMoodPrediction();
   const { themeData } = useTheme();
+  const queryClient = useQueryClient();
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [moodBannerDismissed, setMoodBannerDismissed] = useState(false);
 
@@ -133,6 +135,24 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       goalInputRef.current.focus();
     }
   }, [editingGoal]);
+
+  // Refresh at midnight so days counter & prompt update without manual reload
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    function scheduleNextMidnight() {
+      const now = new Date();
+      const nextMidnight = new Date(now);
+      nextMidnight.setHours(24, 0, 0, 0);
+      const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+      timeoutId = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["daysTogether"] });
+        queryClient.invalidateQueries({ queryKey: ["todaysPrompt"] });
+        scheduleNextMidnight();
+      }, msUntilMidnight);
+    }
+    scheduleNextMidnight();
+    return () => clearTimeout(timeoutId);
+  }, [queryClient]);
 
   const saveGoal = () => {
     const trimmed = goalDraft.trim();
